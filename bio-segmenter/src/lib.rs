@@ -13,7 +13,6 @@ pub mod graphbuilder {
         let mut min_bound: u32 = 0;
         let mut max_bound: u32 = max;
 
-        //if (value - radius) > 0 {
         if value > radius {
             min_bound = value - radius;
         }
@@ -30,6 +29,19 @@ pub mod graphbuilder {
                        g: &mut Graph<u64, ()>, radius: u32, threshold:u64) {
         let node_coords = nodes.get(node).unwrap();
         let (x_min, x_max) = get_bounds(node_coords.0, img.width(), radius);
+        let (y_min, y_max) = get_bounds(node_coords.1, img.height(), radius);
+        
+        let node_pixel = img.get_pixel(node_coords.0, node_coords.1);
+        println!("{}", node_pixel);
+        for col in y_min..y_max {
+            for row in x_min..x_max {
+                let neighbor_coords = (col as u32, row as u32);
+                if &neighbor_coords != node_coords {
+                    let neighbor_pixel = img.get_pixel(neighbor_coords.0, neighbor_coords.1);
+                    
+                }
+            }
+        }
 
     }
 
@@ -85,6 +97,7 @@ mod tests {
 
     #[test]
     fn test0() {
-        build_graph("/media/storage/bio-segmenter/36pixel.png".to_owned())
+        build_graph("/Users/wigasper/repos/bio-segmenter/36pixel.png".to_owned());
+        //build_graph("/media/storage/bio-segmenter/36pixel.png".to_owned())
     }
 }
