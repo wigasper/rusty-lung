@@ -14,6 +14,5 @@ fn main() {
         panic!("msg here");
     });
 
-    let adj_list = build_graph(fp.to_owned(), radius, threshold);
-
+    let adj_list = build_adj_list(fp.to_owned(), radius, threshold);
 }

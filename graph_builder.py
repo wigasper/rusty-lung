@@ -46,3 +46,6 @@ def build_graph(file_path, radius, threshold):
             edges.add(edge)
 
     return edges
+
+if __name__ == "__main__":
+    edges = build_graph("/media/storage/bio-segmenter/ct_scan.png", 3, 10)
