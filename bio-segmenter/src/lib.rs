@@ -32,20 +32,22 @@ pub mod graphbuilder {
         let (y_min, y_max) = get_bounds(node_coords.1, img.height(), radius);
         
         let node_pixel = img.get_pixel(node_coords.0, node_coords.1);
-        println!("{}", node_pixel);
+        print!("{} {} ", node_coords.0, node_coords.1);
+        println!("{}", node_pixel.channels()[0]);
         for col in y_min..y_max {
             for row in x_min..x_max {
                 let neighbor_coords = (col as u32, row as u32);
                 if &neighbor_coords != node_coords {
                     let neighbor_pixel = img.get_pixel(neighbor_coords.0, neighbor_coords.1);
-                    
+                    // if node_pixel.channels()[0] > neighbor_pixel.channels()[0]        
                 }
             }
         }
 
     }
 
-
+    // TODO: get rid of this graph abstraction maybe - if using label prop
+    // only need an adjacency list
     pub fn build_graph(file_path: String) {
         let img = image::open(file_path).unwrap().to_luma();
         
@@ -97,7 +99,7 @@ mod tests {
 
     #[test]
     fn test0() {
-        build_graph("/Users/wigasper/repos/bio-segmenter/36pixel.png".to_owned());
-        //build_graph("/media/storage/bio-segmenter/36pixel.png".to_owned())
+        //build_graph("/Users/wigasper/repos/bio-segmenter/36pixel.png".to_owned());
+        build_graph("/media/storage/bio-segmenter/36pixel.png".to_owned())
     }
 }
