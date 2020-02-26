@@ -24,9 +24,9 @@ pub mod graphbuilder {
     }
 
     fn check_neighbors(
-        node: &u64,
-        nodes: &HashMap<u64, Coord>,
-        nodes_lookup: &HashMap<Coord, u64>,
+        node: &Node,
+        nodes: &HashMap<Node, Coord>,
+        nodes_lookup: &HashMap<Coord, Node>,
         img: &GrayImage,
         adj_list: &mut HashMap<Node, HashSet<Node>>,
         radius: u32,
@@ -121,7 +121,7 @@ mod tests {
 
     #[test]
     fn test_build_adj_list() {
-        let adj_list = build_adj_list("../16pixel.png".to_owned(), 2, 30);
+        let adj_list = build_adj_list("16pixel.png".to_owned(), 2, 30);
         for (key, val) in adj_list.iter() {
             print!("{}: ", key);
             for node in val.iter() {
