@@ -66,7 +66,6 @@ pub mod graphbuilder {
         let mut adj_list: HashMap<Node, HashSet<Node>> = HashMap::new();
 
         // init nodes
-        // TODO: abstract this?
         let mut nodes: HashMap<Node, Coord> = HashMap::new();
         let mut nodes_lookup: HashMap<Coord, Node> = HashMap::new();
         let mut node_id: u64 = 0;
