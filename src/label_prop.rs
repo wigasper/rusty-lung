@@ -27,10 +27,9 @@ pub fn get_new_label (adjacents: &HashSet<Node>,
     labels_counts.iter().max_by_key(|(_, &val)| {val}).unwrap().0.to_owned()
 }
 
-fn update_nodes (adj_list: &HashMap<Node, HashSet<Node>>,
+fn update_nodes(adj_list: &HashMap<Node, HashSet<Node>>,
                  node_labels: &mut HashMap<Node, Label>,
                  nodes: &Vec<Node>) {
-    
     // for each node
     for node in nodes.iter() {
         // get the label with the greatest frequency among neighbors
@@ -41,7 +40,7 @@ fn update_nodes (adj_list: &HashMap<Node, HashSet<Node>>,
             *val = new_label;
         }
     }
-
+    
 }
 
 pub fn label_prop(adj_list: &HashMap<Node, HashSet<Node>>) {
@@ -64,7 +63,11 @@ pub fn label_prop(adj_list: &HashMap<Node, HashSet<Node>>) {
         nodes.shuffle(&mut rng);
 
         // update nodes
-        
+        update_nodes(&adj_list, &mut node_labels, &nodes);
+
+        if node_labels == prior_labels {
+            break;
+        }
     }
 }
 //}
