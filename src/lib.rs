@@ -1,3 +1,5 @@
+pub mod label_prop;
+
 pub mod graphbuilder {
     extern crate image;
 
@@ -37,7 +39,7 @@ pub mod graphbuilder {
         let (y_min, y_max) = get_bounds(node_coords.1, img.height(), radius);
 
         let node_pixel_val = img.get_pixel(node_coords.0, node_coords.1).channels()[0] as i32;
-        
+
         for y in y_min..y_max {
             for x in x_min..x_max {
                 let neighbor_coords = (x as u32, y as u32);
@@ -45,7 +47,7 @@ pub mod graphbuilder {
                     let neighbor_pixel_val = img
                         .get_pixel(neighbor_coords.0, neighbor_coords.1)
                         .channels()[0] as i32;
-                    
+
                     if ((node_pixel_val - neighbor_pixel_val).abs() as u64) < threshold {
                         let neighbor = nodes_lookup.get(&neighbor_coords).unwrap().to_owned();
                         adj_list.get_mut(&node).unwrap().insert(neighbor);
@@ -99,7 +101,13 @@ pub mod graphbuilder {
 
 #[cfg(test)]
 mod tests {
+    type Node = u64;
+    type Label = u64;
+    pub use crate::label_prop::*;
+    //use super::label_prop::label_prop::*;
     use super::graphbuilder::*;
+
+    use std::collections::{HashMap, HashSet};
 
     #[test]
     fn test_get_bounds_0() {
@@ -116,7 +124,24 @@ mod tests {
     fn test0() {
         //build_graph("/Users/wigasper/repos/bio-segmenter/36pixel.png".to_owned());
         //let adj_list = build_adj_list("/media/storage/bio-segmenter/36pixel.png".to_owned(), 3, 10);
+    }
+    
+    #[test]
+    fn test_get_new_label_0() {
+        let mut adjs: HashSet<Node> = HashSet::new();
+        adjs.insert(1);
+        adjs.insert(2);
+        adjs.insert(4);
+        adjs.insert(5);
 
+        let mut labs: HashMap<Node, Label> = HashMap::new();
+        labs.insert(1, 2);
+        labs.insert(2, 2);
+        labs.insert(4, 4);
+        labs.insert(5, 5);
+
+        let result: Label = 2;
+        assert_eq!(result, get_new_label(&adjs, &labs));
     }
 
     #[test]
@@ -128,7 +153,6 @@ mod tests {
                 print!("{} ", node);
             }
             println!();
-        }       
-
+        }
     }
 }
