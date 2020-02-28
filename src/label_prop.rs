@@ -44,7 +44,7 @@ fn update_nodes(adj_list: &HashMap<Node, HashSet<Node>>,
     
 }
 
-pub fn label_prop(adj_list: &HashMap<Node, HashSet<Node>>) {
+pub fn label_prop(adj_list: &HashMap<Node, HashSet<Node>>) -> HashMap<Node, Label>{
     let mut node_labels: HashMap<Node, Label> = HashMap::new();
     let mut rng = thread_rng();
     let mut nodes: Vec<Node> = Vec::new();
@@ -70,6 +70,8 @@ pub fn label_prop(adj_list: &HashMap<Node, HashSet<Node>>) {
             break;
         }
     }
+
+    node_labels
 }
 //}
 

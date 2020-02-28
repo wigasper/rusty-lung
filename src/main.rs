@@ -1,5 +1,5 @@
 //pub use crate::lib::graphbuilder::*;
-use bioseg::graphbuilder::*;
+use bioseg::utils::*;
 use bioseg::label_prop::*;
 use std::env;
 
@@ -14,5 +14,5 @@ fn main() {
         panic!("msg here");
     });
 
-    let adj_list = build_adj_list(fp.to_owned(), radius, threshold);
+    //let adj_list = build_adj_list(fp.to_owned(), radius, threshold);
 }
