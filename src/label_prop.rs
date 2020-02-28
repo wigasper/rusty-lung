@@ -12,6 +12,7 @@ type Label = u64;
 
 pub fn get_new_label (adjacents: &HashSet<Node>, 
                   node_labels: &HashMap<Node, Label>) -> Label {
+    // TODO: can do lines 16-18 without creating this labels var??
     let labels: Vec<Label> = adjacents.iter()
                 .map(|&adj| {node_labels.get(&adj).unwrap().to_owned()}).collect();
     let labels_set: HashSet<Label> = HashSet::from_iter(labels.to_owned());

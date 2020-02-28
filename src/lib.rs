@@ -64,7 +64,9 @@ pub mod graphbuilder {
         threshold: u64,
     ) -> HashMap<Node, HashSet<Node>> {
         let img = image::open(file_path).unwrap().to_luma();
-
+        
+        // TODO: there is a max possible size here for any given radius, maybe should
+        // make this with that size
         let mut adj_list: HashMap<Node, HashSet<Node>> = HashMap::new();
 
         // init nodes
