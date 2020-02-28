@@ -112,6 +112,11 @@ mod tests {
     use std::collections::{HashMap, HashSet};
 
     #[test]
+    fn label_prop_0() {
+        let mut adj_list: HashMap<Node, HashSet<Node>> = HashMap::new();
+    }
+
+    #[test]
     fn test_get_bounds_0() {
         assert_eq!((0, 8), get_bounds(2, 42, 5));
         assert_eq!((0, 3), get_bounds(0, 3, 2));
@@ -146,6 +151,23 @@ mod tests {
         assert_eq!(result, get_new_label(&adjs, &labs));
     }
 
+    #[test]
+    fn test_get_new_label_1() {
+        let mut adjs: HashSet<Node> = HashSet::new();
+        adjs.insert(1);
+        adjs.insert(2);
+        adjs.insert(4);
+        adjs.insert(5);
+
+        let mut labs: HashMap<Node, Label> = HashMap::new();
+        labs.insert(1, 3);
+        labs.insert(2, 3);
+        labs.insert(4, 3);
+        labs.insert(5, 3);
+
+        let result: Label = 3;
+        assert_eq!(result, get_new_label(&adjs, &labs));
+    }
     #[test]
     fn test_build_adj_list() {
         let adj_list = build_adj_list("16pixel.png".to_owned(), 2, 30);
