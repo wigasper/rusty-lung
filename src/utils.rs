@@ -20,14 +20,24 @@ pub fn segment_image(
     //}
     //////////////////
     let communities = label_prop(&adj_list);
+    let mut unique_labels: HashSet<u64> = HashSet::new();
+    for (_key, val) in communities.iter() {
+        unique_labels.insert(val.to_owned());
+    }
+    let mut comm_id_map = HashMap::new();
+    let mut comm_id: u64 = 0;
+    for unique_lab in unique_labels.iter() {
+        comm_id_map.insert(unique_lab, comm_id);
+        comm_id += 1;
+    }
     //////////////////////////////////////////////////////
-    println!("Found {} communities", communities.len());
+    println!("Found {} communities", unique_labels.len());
     //////////////////////////////////////////////////////
     let mut output = ImageBuffer::<Luma<u8>, Vec<u8>>::new(img.width(), img.height()); 
     
     for (node, coord) in node_coords.iter() {
         let pixel = output.get_pixel_mut(coord.0, coord.1);
-        let pixel_val = 255 / (communities.get(node).unwrap() + 1);
+        let pixel_val = 255 - (255 / (comm_id_map.get(communities.get(node).unwrap()).unwrap() + 1));
         *pixel = image::Luma([pixel_val as u8]);
     }
 
@@ -77,9 +87,9 @@ fn check_neighbors(
         for x in x_min..x_max {
             let neighbor_coords = (x as u32, y as u32);
             // HACK
-            let dist = euc_dist(&neighbor_coords, node_coords);
+            //let dist = euc_dist(&neighbor_coords, node_coords);
 
-            if &neighbor_coords != node_coords && dist > 2.0 {
+            if &neighbor_coords != node_coords { //&& dist > 2.0 {
                 let neighbor_pixel_val = img
                     .get_pixel(neighbor_coords.0, neighbor_coords.1)
                     .channels()[0] as i32;

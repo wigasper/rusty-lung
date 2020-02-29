@@ -38,7 +38,7 @@ fn update_nodes(adj_list: &HashMap<Node, HashSet<Node>>,
         
         let mut new_label: Label = node.to_owned();
         ////////////////
-        println!("prior label: {}", node_labels.get(node).unwrap());
+        //println!("prior label: {}", node_labels.get(node).unwrap());
         if !adjs.is_empty() {
             new_label = get_new_label(adjs, node_labels);
         }
@@ -47,7 +47,7 @@ fn update_nodes(adj_list: &HashMap<Node, HashSet<Node>>,
             *val = new_label;
         }
         /////////////
-        println!("new label: {}", node_labels.get(node).unwrap());
+        //println!("new label: {}", node_labels.get(node).unwrap());
     }
     
 }
