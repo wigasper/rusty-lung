@@ -73,7 +73,7 @@ mod tests {
     #[test]
     fn test_build_adj_list() {
         //let adj_list = build_adj_list("16pixel.png", &2, &30);
-        segment_image("ct_scan.png", 10, 20);
+        //segment_image("ct_scan.png", 10, 20);
         //for (key, val) in adj_list.iter() {
         //    print!("{}: ", key);
          //   for node in val.iter() {

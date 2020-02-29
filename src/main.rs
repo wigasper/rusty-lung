@@ -13,6 +13,7 @@ fn main() {
     let threshold: u64 = args[3].parse().unwrap_or_else(|why| {
         panic!("msg here");
     });
-
+    
+    segment_image(fp, radius, threshold);
     //let adj_list = build_adj_list(fp.to_owned(), radius, threshold);
 }

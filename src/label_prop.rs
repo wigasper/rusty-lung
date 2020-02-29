@@ -35,11 +35,19 @@ fn update_nodes(adj_list: &HashMap<Node, HashSet<Node>>,
     for node in nodes.iter() {
         // get the label with the greatest frequency among neighbors
         let adjs = adj_list.get(&node).unwrap();
-        let new_label = get_new_label(adjs, node_labels);
         
+        let mut new_label: Label = node.to_owned();
+        ////////////////
+        println!("prior label: {}", node_labels.get(node).unwrap());
+        if !adjs.is_empty() {
+            new_label = get_new_label(adjs, node_labels);
+        }
+
         if let Some(val) = node_labels.get_mut(node) {
             *val = new_label;
         }
+        /////////////
+        println!("new label: {}", node_labels.get(node).unwrap());
     }
     
 }
@@ -55,7 +63,7 @@ pub fn label_prop(adj_list: &HashMap<Node, HashSet<Node>>) -> HashMap<Node, Labe
         node_labels.insert(node.to_owned(), node.to_owned());
         nodes.push(node.to_owned());
     }
-    
+    let mut num_iters = 0;    
     // fit loop - continues until the labels don't change
     loop {
         let prior_labels = node_labels.clone();
@@ -65,8 +73,9 @@ pub fn label_prop(adj_list: &HashMap<Node, HashSet<Node>>) -> HashMap<Node, Labe
 
         // update nodes
         update_nodes(&adj_list, &mut node_labels, &nodes);
-
-        if node_labels == prior_labels {
+        
+        num_iters += 1;
+        if (node_labels == prior_labels) || (num_iters == 1000) {
             break;
         }
     }

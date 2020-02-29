@@ -14,12 +14,20 @@ pub fn segment_image(
     threshold: u64,) {
 
     let (adj_list, node_coords, img) = build_adj_list(&file_path, &radius, &threshold);
-    let communities = label_prop(&adj_list); 
+    ////////////////////////////
+    //for (node, adjs) in adj_list.iter() {
+    //    println!("node: {} num adjs: {}", node, adjs.len());
+    //}
+    //////////////////
+    let communities = label_prop(&adj_list);
+    //////////////////////////////////////////////////////
+    println!("Found {} communities", communities.len());
+    //////////////////////////////////////////////////////
     let mut output = ImageBuffer::<Luma<u8>, Vec<u8>>::new(img.width(), img.height()); 
     
     for (node, coord) in node_coords.iter() {
         let pixel = output.get_pixel_mut(coord.0, coord.1);
-        let pixel_val = 255 / communities.get(node).unwrap();
+        let pixel_val = 255 / (communities.get(node).unwrap() + 1);
         *pixel = image::Luma([pixel_val as u8]);
     }
 
@@ -41,6 +49,14 @@ pub fn get_bounds(value: u32, max: u32, radius: u32) -> (u32, u32) {
     (min_bound, max_bound)
 }
 
+// FOR HACK
+fn euc_dist((x1, y1): &Coord, (x2, y2): &Coord) -> f64 {
+    let dx: f64 = x2.to_owned() as f64 - x1.to_owned() as f64;
+    let dy: f64 = y2.to_owned() as f64 - y1.to_owned() as f64;
+    let radicand: f64 = dx * dx + dy * dy;
+    radicand.sqrt()
+}
+
 fn check_neighbors(
     node: &Node,
     nodes: &HashMap<Node, Coord>,
@@ -55,11 +71,15 @@ fn check_neighbors(
     let (y_min, y_max) = get_bounds(node_coords.1, img.height(), radius);
 
     let node_pixel_val = img.get_pixel(node_coords.0, node_coords.1).channels()[0] as i32;
-
+    
+    // TODO get neighbors with combinatorics instead of this double for loop maybe?
     for y in y_min..y_max {
         for x in x_min..x_max {
             let neighbor_coords = (x as u32, y as u32);
-            if &neighbor_coords != node_coords {
+            // HACK
+            let dist = euc_dist(&neighbor_coords, node_coords);
+
+            if &neighbor_coords != node_coords && dist > 2.0 {
                 let neighbor_pixel_val = img
                     .get_pixel(neighbor_coords.0, neighbor_coords.1)
                     .channels()[0] as i32;
