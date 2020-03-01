@@ -4,8 +4,10 @@ use image::*;
 use crate::label_prop::*;
 
 use std::collections::{HashMap, HashSet};
+use std::iter::FromIterator;
 
 type Node = u64;
+type Label = u64;
 type Coord = (u32, u32);
 
 pub fn segment_image(
@@ -13,13 +15,13 @@ pub fn segment_image(
     radius: u32,
     threshold: u64,) {
 
-    let (adj_list, node_coords, img) = build_adj_list(&file_path, &radius, &threshold);
+    let (adj_list, node_coords, node_labels, img) = build_adj_list(&file_path, &radius, &threshold);
     ////////////////////////////
     //for (node, adjs) in adj_list.iter() {
     //    println!("node: {} num adjs: {}", node, adjs.len());
     //}
     //////////////////
-    let communities = label_prop(&adj_list);
+    let communities = label_prop(&adj_list, node_labels);
     let mut unique_labels: HashSet<u64> = HashSet::new();
     for (_key, val) in communities.iter() {
         unique_labels.insert(val.to_owned());
@@ -71,6 +73,7 @@ fn check_neighbors(
     node: &Node,
     nodes: &HashMap<Node, Coord>,
     nodes_lookup: &HashMap<Coord, Node>,
+    node_labels: &mut HashMap<Node, Label>,
     img: &GrayImage,
     adj_list: &mut HashMap<Node, HashSet<Node>>,
     radius: u32,
@@ -86,7 +89,6 @@ fn check_neighbors(
     for y in y_min..y_max {
         for x in x_min..x_max {
             let neighbor_coords = (x as u32, y as u32);
-            // HACK
             //let dist = euc_dist(&neighbor_coords, node_coords);
 
             if &neighbor_coords != node_coords { //&& dist > 2.0 {
@@ -94,10 +96,19 @@ fn check_neighbors(
                     .get_pixel(neighbor_coords.0, neighbor_coords.1)
                     .channels()[0] as i32;
 
-                if ((node_pixel_val - neighbor_pixel_val).abs() as u64) < threshold {
+                let d_pixel = (node_pixel_val - neighbor_pixel_val).abs() as u64;
+                if d_pixel < threshold {
                     let neighbor = nodes_lookup.get(&neighbor_coords).unwrap().to_owned();
                     adj_list.get_mut(&node).unwrap().insert(neighbor);
                     adj_list.get_mut(&neighbor).unwrap().insert(node.to_owned());
+
+                    // Set neighbor to label if they have the exact same pixel val
+                    if d_pixel == 0 {
+                        let node_lab = node_labels.get(node).unwrap().to_owned();
+                        if let Some(lab) = node_labels.get_mut(&neighbor) {
+                            *lab = node_lab;
+                        }
+                    }
                 }
             }
         }
@@ -108,7 +119,7 @@ pub fn build_adj_list(
     file_path: &str,
     radius: &u32,
     threshold: &u64,
-) -> (HashMap<Node, HashSet<Node>>, HashMap<Node, Coord>, GrayImage) {
+) -> (HashMap<Node, Vec<Node>>, HashMap<Node, Coord>, HashMap<Node, Label>, GrayImage) {
     let img = image::open(file_path).unwrap().to_luma();
     
     // TODO: there is a max possible size here for any given radius, maybe should
@@ -119,6 +130,7 @@ pub fn build_adj_list(
     let mut nodes: HashMap<Node, Coord> = HashMap::new();
     let mut nodes_lookup: HashMap<Coord, Node> = HashMap::new();
     let mut node_id: u64 = 0;
+    let mut node_labels: HashMap<Node, Label> = HashMap::new();
 
     for pixel in img.enumerate_pixels() {
         nodes.insert(node_id, (pixel.0, pixel.1));
@@ -127,6 +139,7 @@ pub fn build_adj_list(
         //println!("{}: {}, {} - {}", node_id, pixel.0, pixel.1, pixel_val);
         //////////
         nodes_lookup.insert((pixel.0, pixel.1), node_id);
+        node_labels.insert(node_id, node_id);
         adj_list.insert(node_id, HashSet::new());
         node_id += 1;
     }
@@ -136,6 +149,7 @@ pub fn build_adj_list(
             &node,
             &nodes,
             &nodes_lookup,
+            &mut node_labels,
             &img,
             &mut adj_list,
             radius.to_owned(),
@@ -143,6 +157,12 @@ pub fn build_adj_list(
         );
     }
 
-    (adj_list, nodes, img)
+    let mut adj_list_out: HashMap<Node, Vec<Node>> = HashMap::new();
+    for (key, val) in adj_list.iter() {
+        let adjs: Vec<Node> = Vec::from_iter(val.to_owned());
+        adj_list_out.insert(key.to_owned(), adjs);
+    }
+
+    (adj_list_out, nodes, node_labels, img)
 }
 

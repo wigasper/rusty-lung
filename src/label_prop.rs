@@ -10,25 +10,40 @@ use std::iter::FromIterator;
 type Node = u64;
 type Label = u64;
 
-pub fn get_new_label (adjacents: &HashSet<Node>, 
+
+//TODO: the change of adjacents from &HashSet to &Vec does not seem to have helped
+pub fn get_new_label (adjacents: &Vec<Node>, 
                   node_labels: &HashMap<Node, Label>) -> Label {
     // TODO: can do lines 16-18 without creating this labels var??
     let labels: Vec<Label> = adjacents.iter()
                 .map(|&adj| {node_labels.get(&adj).unwrap().to_owned()}).collect();
-    let labels_set: HashSet<Label> = HashSet::from_iter(labels.to_owned());
-    let mut labels_counts: HashMap<Label, u64> = HashMap::new();
-
-    for label in labels_set.iter() {
-        let num_occurrences = labels.iter().filter(|&lab| lab == label).count() as u64;
-        labels_counts.insert(label.to_owned(), num_occurrences);
+   
+    // This seems to be faster
+    let mut labels_counts: HashMap<&Label, u64> = HashMap::new();
+    for label in labels.iter() {
+        if labels_counts.contains_key(&label) {
+            if let Some(count) = labels_counts.get_mut(&label) {
+                *count += 1;
+            }
+        } else {
+            labels_counts.insert(label, 1);
+        }
     }
+    ////////////// og
+    //let labels_set: HashSet<Label> = HashSet::from_iter(labels.to_owned());
+    //let mut labels_counts: HashMap<Label, u64> = HashMap::new();
+
+    //for label in labels_set.iter() {
+    //    let num_occurrences = labels.iter().filter(|&lab| lab == label).count() as u64;
+    //    labels_counts.insert(label.to_owned(), num_occurrences);
+    //}
     
     // TODO: this might be good enough for now, but maybe it should
     // be random in the future
-    labels_counts.iter().max_by_key(|(_, &val)| {val}).unwrap().0.to_owned()
+    labels_counts.iter().max_by_key(|(_, &val)| {val}).unwrap().0.to_owned().to_owned()
 }
 
-fn update_nodes(adj_list: &HashMap<Node, HashSet<Node>>,
+fn update_nodes(adj_list: &HashMap<Node, Vec<Node>>,
                  node_labels: &mut HashMap<Node, Label>,
                  nodes: &Vec<Node>) {
     // for each node
@@ -36,12 +51,13 @@ fn update_nodes(adj_list: &HashMap<Node, HashSet<Node>>,
         // get the label with the greatest frequency among neighbors
         let adjs = adj_list.get(&node).unwrap();
         
+        
         let mut new_label: Label = node.to_owned();
         ////////////////
         //println!("prior label: {}", node_labels.get(node).unwrap());
         if !adjs.is_empty() {
             new_label = get_new_label(adjs, node_labels);
-        }
+        } 
 
         if let Some(val) = node_labels.get_mut(node) {
             *val = new_label;
@@ -52,30 +68,38 @@ fn update_nodes(adj_list: &HashMap<Node, HashSet<Node>>,
     
 }
 
-pub fn label_prop(adj_list: &HashMap<Node, HashSet<Node>>) -> HashMap<Node, Label>{
-    let mut node_labels: HashMap<Node, Label> = HashMap::new();
+pub fn label_prop(adj_list: &HashMap<Node, Vec<Node>>,
+                  mut node_labels: HashMap<Node, Label>) -> HashMap<Node, Label>{
+    //let mut node_labels: HashMap<Node, Label> = HashMap::new();
     let mut rng = thread_rng();
     let mut nodes: Vec<Node> = Vec::new();
-
+    //let mut node_labels: HashMap<Node, Label> = node_labels_in.to_owned();
+    
     // init - each node gets its own label
-    // TODO: dereference node vars here???
-    for (node, _adjs) in adj_list.iter() {
-        node_labels.insert(node.to_owned(), node.to_owned());
-        nodes.push(node.to_owned());
-    }
+    // TODO: pre-label algorithm
+    //for (node, _adjs) in adj_list.iter() {
+    //    node_labels.insert(node.to_owned(), node.to_owned());
+    //    nodes.push(node.to_owned());
+    //}
     let mut num_iters = 0;    
     // fit loop - continues until the labels don't change
     loop {
+        // TODO: track label change better here, maybe in update_nodes
+        // this uses up time for the big clone
         let prior_labels = node_labels.clone();
 
         // shuffle nodes vec for random updating
+        // TODO: cutting shuffle saves a little time, maybe there 
+        // is a faster way to do this
         nodes.shuffle(&mut rng);
 
         // update nodes
         update_nodes(&adj_list, &mut node_labels, &nodes);
         
         num_iters += 1;
+        println!("completed {} iters", num_iters);
         if (node_labels == prior_labels) || (num_iters == 1000) {
+        //if num_iters == 1000 {
             break;
         }
     }

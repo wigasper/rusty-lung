@@ -37,11 +37,11 @@ mod tests {
     
     #[test]
     fn test_get_new_label_0() {
-        let mut adjs: HashSet<Node> = HashSet::new();
-        adjs.insert(1);
-        adjs.insert(2);
-        adjs.insert(4);
-        adjs.insert(5);
+        let mut adjs: Vec<Node> = Vec::new();
+        adjs.push(1);
+        adjs.push(2);
+        adjs.push(4);
+        adjs.push(5);
 
         let mut labs: HashMap<Node, Label> = HashMap::new();
         labs.insert(1, 2);
@@ -55,11 +55,11 @@ mod tests {
 
     #[test]
     fn test_get_new_label_1() {
-        let mut adjs: HashSet<Node> = HashSet::new();
-        adjs.insert(1);
-        adjs.insert(2);
-        adjs.insert(4);
-        adjs.insert(5);
+        let mut adjs: Vec<Node> = Vec::new();
+        adjs.push(1);
+        adjs.push(2);
+        adjs.push(4);
+        adjs.push(5);
 
         let mut labs: HashMap<Node, Label> = HashMap::new();
         labs.insert(1, 3);
