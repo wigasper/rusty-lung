@@ -4,8 +4,8 @@ pub mod utils;
 
 #[cfg(test)]
 mod tests {
-    type Node = u64;
-    type Label = u64;
+    type Node = u32;
+    type Label = u32;
     pub use crate::label_prop::*;
     pub use crate::utils::*;
     //use super::label_prop::label_prop::*;

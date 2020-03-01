@@ -6,14 +6,14 @@ use crate::label_prop::*;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
-type Node = u64;
-type Label = u64;
+type Node = u32;
+type Label = u32;
 type Coord = (u32, u32);
 
 pub fn segment_image(
     file_path: &str,
     radius: u32,
-    threshold: u64,) {
+    threshold: u8,) {
 
     let (adj_list, node_coords, node_labels, img) = build_adj_list(&file_path, &radius, &threshold);
     ////////////////////////////
@@ -22,7 +22,7 @@ pub fn segment_image(
     //}
     //////////////////
     let communities = label_prop(&adj_list, node_labels);
-    let mut unique_labels: HashSet<u64> = HashSet::new();
+    let mut unique_labels: HashSet<u32> = HashSet::new();
     for (_key, val) in communities.iter() {
         unique_labels.insert(val.to_owned());
     }
@@ -77,7 +77,7 @@ fn check_neighbors(
     img: &GrayImage,
     adj_list: &mut HashMap<Node, HashSet<Node>>,
     radius: u32,
-    threshold: u64,
+    threshold: u8,
 ) {
     let node_coords = nodes.get(node).unwrap();
     let (x_min, x_max) = get_bounds(node_coords.0, img.width(), radius);
@@ -96,7 +96,7 @@ fn check_neighbors(
                     .get_pixel(neighbor_coords.0, neighbor_coords.1)
                     .channels()[0] as i32;
 
-                let d_pixel = (node_pixel_val - neighbor_pixel_val).abs() as u64;
+                let d_pixel = (node_pixel_val - neighbor_pixel_val).abs() as u8;
                 if d_pixel < threshold {
                     let neighbor = nodes_lookup.get(&neighbor_coords).unwrap().to_owned();
                     adj_list.get_mut(&node).unwrap().insert(neighbor);
@@ -118,7 +118,7 @@ fn check_neighbors(
 pub fn build_adj_list(
     file_path: &str,
     radius: &u32,
-    threshold: &u64,
+    threshold: &u8,
 ) -> (HashMap<Node, Vec<Node>>, HashMap<Node, Coord>, HashMap<Node, Label>, GrayImage) {
     let img = image::open(file_path).unwrap().to_luma();
     
@@ -129,7 +129,7 @@ pub fn build_adj_list(
     // init nodes
     let mut nodes: HashMap<Node, Coord> = HashMap::new();
     let mut nodes_lookup: HashMap<Coord, Node> = HashMap::new();
-    let mut node_id: u64 = 0;
+    let mut node_id: u32 = 0;
     let mut node_labels: HashMap<Node, Label> = HashMap::new();
 
     for pixel in img.enumerate_pixels() {

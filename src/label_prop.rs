@@ -7,8 +7,8 @@ use rand::seq::SliceRandom;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
-type Node = u64;
-type Label = u64;
+type Node = u32;
+type Label = u32;
 
 
 //TODO: the change of adjacents from &HashSet to &Vec does not seem to have helped
@@ -19,7 +19,7 @@ pub fn get_new_label (adjacents: &Vec<Node>,
                 .map(|&adj| {node_labels.get(&adj).unwrap().to_owned()}).collect();
    
     // This seems to be faster
-    let mut labels_counts: HashMap<&Label, u64> = HashMap::new();
+    let mut labels_counts: HashMap<&Label, u16> = HashMap::new();
     for label in labels.iter() {
         if labels_counts.contains_key(&label) {
             if let Some(count) = labels_counts.get_mut(&label) {

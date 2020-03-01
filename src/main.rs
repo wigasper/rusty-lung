@@ -10,7 +10,7 @@ fn main() {
         panic!("msg here");
     });
 
-    let threshold: u64 = args[3].parse().unwrap_or_else(|why| {
+    let threshold: u8 = args[3].parse().unwrap_or_else(|why| {
         panic!("msg here");
     });
     
