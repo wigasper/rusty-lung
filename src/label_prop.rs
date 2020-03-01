@@ -57,7 +57,7 @@ fn update_nodes(adj_list: &HashMap<Node, Vec<Node>>,
         //println!("prior label: {}", node_labels.get(node).unwrap());
         if !adjs.is_empty() {
             new_label = get_new_label(adjs, node_labels);
-        } 
+        }  
 
         if let Some(val) = node_labels.get_mut(node) {
             *val = new_label;
@@ -77,10 +77,11 @@ pub fn label_prop(adj_list: &HashMap<Node, Vec<Node>>,
     
     // init - each node gets its own label
     // TODO: pre-label algorithm
-    //for (node, _adjs) in adj_list.iter() {
+    for (node, _adjs) in adj_list.iter() {
     //    node_labels.insert(node.to_owned(), node.to_owned());
-    //    nodes.push(node.to_owned());
-    //}
+        nodes.push(node.to_owned());
+    }
+
     let mut num_iters = 0;    
     // fit loop - continues until the labels don't change
     loop {

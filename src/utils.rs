@@ -61,7 +61,7 @@ pub fn get_bounds(value: u32, max: u32, radius: u32) -> (u32, u32) {
     (min_bound, max_bound)
 }
 
-// FOR HACK
+// FOR testing
 fn euc_dist((x1, y1): &Coord, (x2, y2): &Coord) -> f64 {
     let dx: f64 = x2.to_owned() as f64 - x1.to_owned() as f64;
     let dy: f64 = y2.to_owned() as f64 - y1.to_owned() as f64;
