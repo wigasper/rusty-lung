@@ -1,7 +1,7 @@
 extern crate image;
 
-use image::*;
 use crate::label_prop::*;
+use image::*;
 
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
@@ -10,17 +10,8 @@ type Node = u32;
 type Label = u32;
 type Coord = (u32, u32);
 
-pub fn segment_image(
-    file_path: &str,
-    radius: u32,
-    threshold: u8,) {
-
+pub fn segment_image(file_path: &str, radius: u32, threshold: u8) {
     let (adj_list, node_coords, node_labels, img) = build_adj_list(&file_path, &radius, &threshold);
-    ////////////////////////////
-    //for (node, adjs) in adj_list.iter() {
-    //    println!("node: {} num adjs: {}", node, adjs.len());
-    //}
-    //////////////////
     let communities = label_prop(&adj_list, node_labels);
     let mut unique_labels: HashSet<u32> = HashSet::new();
     for (_key, val) in communities.iter() {
@@ -35,14 +26,16 @@ pub fn segment_image(
     //////////////////////////////////////////////////////
     println!("Found {} communities", unique_labels.len());
     //////////////////////////////////////////////////////
-    let mut output = ImageBuffer::<Luma<u8>, Vec<u8>>::new(img.width(), img.height()); 
-    
+    let mut output = ImageBuffer::<Luma<u8>, Vec<u8>>::new(img.width(), img.height());
+
     for (node, coord) in node_coords.iter() {
         let pixel = output.get_pixel_mut(coord.0, coord.1);
-        let pixel_val = 255 - (255 / (comm_id_map.get(communities.get(node).unwrap()).unwrap() + 1));
+        let pixel_val =
+            255 - (255 / (comm_id_map.get(communities.get(node).unwrap()).unwrap() + 1));
         *pixel = image::Luma([pixel_val as u8]);
     }
 
+    // TODO: take this as an argument
     output.save("output.png").unwrap();
 }
 
@@ -62,12 +55,12 @@ pub fn get_bounds(value: u32, max: u32, radius: u32) -> (u32, u32) {
 }
 
 // FOR testing
-fn euc_dist((x1, y1): &Coord, (x2, y2): &Coord) -> f64 {
-    let dx: f64 = x2.to_owned() as f64 - x1.to_owned() as f64;
-    let dy: f64 = y2.to_owned() as f64 - y1.to_owned() as f64;
-    let radicand: f64 = dx * dx + dy * dy;
-    radicand.sqrt()
-}
+//fn euc_dist((x1, y1): &Coord, (x2, y2): &Coord) -> f64 {
+//    let dx: f64 = x2.to_owned() as f64 - x1.to_owned() as f64;
+//    let dy: f64 = y2.to_owned() as f64 - y1.to_owned() as f64;
+//    let radicand: f64 = dx * dx + dy * dy;
+//    radicand.sqrt()
+//}
 
 fn check_neighbors(
     node: &Node,
@@ -84,14 +77,15 @@ fn check_neighbors(
     let (y_min, y_max) = get_bounds(node_coords.1, img.height(), radius);
 
     let node_pixel_val = img.get_pixel(node_coords.0, node_coords.1).channels()[0] as i32;
-    
+
     // TODO get neighbors with combinatorics instead of this double for loop maybe?
     for y in y_min..y_max {
         for x in x_min..x_max {
             let neighbor_coords = (x as u32, y as u32);
             //let dist = euc_dist(&neighbor_coords, node_coords);
 
-            if &neighbor_coords != node_coords { //&& dist > 2.0 {
+            if &neighbor_coords != node_coords {
+                //&& dist > 2.0 {
                 let neighbor_pixel_val = img
                     .get_pixel(neighbor_coords.0, neighbor_coords.1)
                     .channels()[0] as i32;
@@ -119,9 +113,14 @@ pub fn build_adj_list(
     file_path: &str,
     radius: &u32,
     threshold: &u8,
-) -> (HashMap<Node, Vec<Node>>, HashMap<Node, Coord>, HashMap<Node, Label>, GrayImage) {
+) -> (
+    HashMap<Node, Vec<Node>>,
+    HashMap<Node, Coord>,
+    HashMap<Node, Label>,
+    GrayImage,
+) {
     let img = image::open(file_path).unwrap().to_luma();
-    
+
     // TODO: there is a max possible size here for any given radius, maybe should
     // make this with that size
     let mut adj_list: HashMap<Node, HashSet<Node>> = HashMap::new();
@@ -134,10 +133,6 @@ pub fn build_adj_list(
 
     for pixel in img.enumerate_pixels() {
         nodes.insert(node_id, (pixel.0, pixel.1));
-        /////////
-        //let pixel_val = img.get_pixel(pixel.0, pixel.1).channels()[0];
-        //println!("{}: {}, {} - {}", node_id, pixel.0, pixel.1, pixel_val);
-        //////////
         nodes_lookup.insert((pixel.0, pixel.1), node_id);
         node_labels.insert(node_id, node_id);
         adj_list.insert(node_id, HashSet::new());
@@ -165,4 +160,3 @@ pub fn build_adj_list(
 
     (adj_list_out, nodes, node_labels, img)
 }
-

@@ -34,7 +34,7 @@ mod tests {
         //build_graph("/Users/wigasper/repos/bio-segmenter/36pixel.png".to_owned());
         //let adj_list = build_adj_list("/media/storage/bio-segmenter/36pixel.png".to_owned(), 3, 10);
     }
-    
+
     #[test]
     fn test_get_new_label_0() {
         let mut adjs: Vec<Node> = Vec::new();
@@ -76,10 +76,10 @@ mod tests {
         //segment_image("ct_scan.png", 10, 20);
         //for (key, val) in adj_list.iter() {
         //    print!("{}: ", key);
-         //   for node in val.iter() {
-          //      print!("{} ", node);
-            //}
-           // println!();
-       // }
+        //   for node in val.iter() {
+        //      print!("{} ", node);
+        //}
+        // println!();
+        // }
     }
 }
