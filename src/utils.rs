@@ -8,6 +8,8 @@ use std::iter::FromIterator;
 
 type Node = u32;
 type Label = u32;
+// change Label to u8 to test speed
+//type Label = u8;
 type Coord = (u32, u32);
 
 pub fn segment_image(file_path: &str, radius: u32, threshold: u8) {
@@ -78,6 +80,12 @@ fn check_neighbors(
 
     let node_pixel_val = img.get_pixel(node_coords.0, node_coords.1).channels()[0] as i32;
 
+    // new test, init pixels with their value
+    // moved to build_adj_list
+    //if let Some(lab) = node_labels.get_mut(node) {
+    //    *lab = img.get_pixel(node_coords.0, node_coords.1).channels()[0] as u32;
+    //}
+    //println!("label for {}: {}", node, node_labels.get(node).unwrap());
     // TODO get neighbors with combinatorics instead of this double for loop maybe?
     for y in y_min..y_max {
         for x in x_min..x_max {
@@ -97,12 +105,12 @@ fn check_neighbors(
                     adj_list.get_mut(&neighbor).unwrap().insert(node.to_owned());
 
                     // Set neighbor to label if they have the exact same pixel val
-                    if d_pixel == 0 {
-                        let node_lab = node_labels.get(node).unwrap().to_owned();
-                        if let Some(lab) = node_labels.get_mut(&neighbor) {
-                            *lab = node_lab;
-                        }
-                    }
+                    //if d_pixel == 0 {
+                    //    let node_lab = node_labels.get(node).unwrap().to_owned();
+                    //    if let Some(lab) = node_labels.get_mut(&neighbor) {
+                    //        *lab = node_lab;
+                    //    }
+                    //}
                 }
             }
         }
@@ -130,11 +138,15 @@ pub fn build_adj_list(
     let mut nodes_lookup: HashMap<Coord, Node> = HashMap::new();
     let mut node_id: u32 = 0;
     let mut node_labels: HashMap<Node, Label> = HashMap::new();
-
+    
+    // TODO: test label init where each node gets its pixel value as a label
     for pixel in img.enumerate_pixels() {
         nodes.insert(node_id, (pixel.0, pixel.1));
         nodes_lookup.insert((pixel.0, pixel.1), node_id);
-        node_labels.insert(node_id, node_id);
+        // new label init, give each node its pixel val
+        // TODO: try this as u8 if good
+        let mut label = img.get_pixel(pixel.0, pixel.1).channels()[0] as u32;
+        node_labels.insert(node_id, label);
         adj_list.insert(node_id, HashSet::new());
         node_id += 1;
     }

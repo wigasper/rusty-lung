@@ -7,6 +7,7 @@ use rand::thread_rng;
 use std::collections::HashMap;
 
 type Node = u32;
+//type Label = u32;
 type Label = u32;
 
 // TODO: is there something here where if a nodes adjacents all have one label we can
@@ -50,13 +51,14 @@ fn update_nodes(
         // get the label with the greatest frequency among neighbors
         let adjs = adj_list.get(&node).unwrap();
 
-        let mut new_label: Label = node.to_owned();
+        //let mut new_label: Label = node.to_owned();
         if !adjs.is_empty() {
-            new_label = get_new_label(adjs, node_labels);
-        }
+            let mut new_label: Label = get_new_label(adjs, node_labels);
+        
 
-        if let Some(val) = node_labels.get_mut(node) {
-            *val = new_label;
+            if let Some(val) = node_labels.get_mut(node) {
+                *val = new_label;
+            }
         }
     }
 }
