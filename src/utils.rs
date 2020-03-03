@@ -70,7 +70,7 @@ fn check_neighbors(
     nodes_lookup: &HashMap<Coord, Node>,
     node_labels: &mut HashMap<Node, Label>,
     img: &GrayImage,
-    adj_list: &mut HashMap<Node, HashSet<Node>>,
+    adj_list: &mut HashMap<Node, Vec<Node>>,
     radius: u32,
     threshold: u8,
 ) {
@@ -101,8 +101,8 @@ fn check_neighbors(
                 let d_pixel = (node_pixel_val - neighbor_pixel_val).abs() as u8;
                 if d_pixel < threshold {
                     let neighbor = nodes_lookup.get(&neighbor_coords).unwrap().to_owned();
-                    adj_list.get_mut(&node).unwrap().insert(neighbor);
-                    adj_list.get_mut(&neighbor).unwrap().insert(node.to_owned());
+                    adj_list.get_mut(&node).unwrap().push(neighbor);
+                    adj_list.get_mut(&neighbor).unwrap().push(node.to_owned());
 
                     // Set neighbor to label if they have the exact same pixel val
                     //if d_pixel == 0 {
@@ -131,7 +131,7 @@ pub fn build_adj_list(
 
     // TODO: there is a max possible size here for any given radius, maybe should
     // make this with that size
-    let mut adj_list: HashMap<Node, HashSet<Node>> = HashMap::new();
+    let mut adj_list: HashMap<Node, Vec<Node>> = HashMap::new();
 
     // init nodes
     let mut nodes: HashMap<Node, Coord> = HashMap::new();
@@ -147,7 +147,7 @@ pub fn build_adj_list(
         // TODO: try this as u8 if good
         let mut label = img.get_pixel(pixel.0, pixel.1).channels()[0] as u32;
         node_labels.insert(node_id, label);
-        adj_list.insert(node_id, HashSet::new());
+        adj_list.insert(node_id, Vec::new());
         node_id += 1;
     }
 
@@ -164,11 +164,11 @@ pub fn build_adj_list(
         );
     }
 
-    let mut adj_list_out: HashMap<Node, Vec<Node>> = HashMap::new();
-    for (key, val) in adj_list.iter() {
-        let adjs: Vec<Node> = Vec::from_iter(val.to_owned());
-        adj_list_out.insert(key.to_owned(), adjs);
-    }
+    //let mut adj_list_out: HashMap<Node, Vec<Node>> = HashMap::new();
+    //for (key, val) in adj_list.iter() {
+    //    let adjs: Vec<Node> = Vec::from_iter(val.to_owned());
+    //    adj_list_out.insert(key.to_owned(), adjs);
+    //}
 
-    (adj_list_out, nodes, node_labels, img)
+    (adj_list, nodes, node_labels, img)
 }
