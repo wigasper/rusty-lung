@@ -104,6 +104,14 @@ fn check_neighbors(
                     adj_list.get_mut(&node).unwrap().push(neighbor);
                     adj_list.get_mut(&neighbor).unwrap().push(node.to_owned());
 
+                    // TESTING add multiple edges if neighboring pixels are the same
+                    // may speed up convergence
+                    if d_pixel == 0 {
+                        for _ in 0..2 {
+                            adj_list.get_mut(&node).unwrap().push(neighbor);
+                            adj_list.get_mut(&neighbor).unwrap().push(node.to_owned());
+                        }
+                    }
                     // Set neighbor to label if they have the exact same pixel val
                     //if d_pixel == 0 {
                     //    let node_lab = node_labels.get(node).unwrap().to_owned();
