@@ -12,7 +12,7 @@ type Label = u32;
 //type Label = u8;
 type Coord = (u32, u32);
 
-pub fn segment_image(file_path: &str, radius: u32, threshold: u8) {
+pub fn segment_image(file_path: &str, out_path: &str, radius: u32, threshold: u8) {
     let (adj_list, node_coords, node_labels, img) = build_adj_list(&file_path, &radius, &threshold);
     let communities = label_prop(&adj_list, node_labels);
     let mut unique_labels: HashSet<u32> = HashSet::new();
@@ -37,8 +37,7 @@ pub fn segment_image(file_path: &str, radius: u32, threshold: u8) {
         *pixel = image::Luma([pixel_val as u8]);
     }
 
-    // TODO: take this as an argument
-    output.save("output.png").unwrap();
+    output.save(out_path).unwrap();
 }
 
 pub fn get_bounds(value: u32, max: u32, radius: u32) -> (u32, u32) {
