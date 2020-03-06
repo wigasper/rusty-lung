@@ -53,7 +53,7 @@ fn update_nodes(
 
         //let mut new_label: Label = node.to_owned();
         if !adjs.is_empty() {
-            let mut new_label: Label = get_new_label(adjs, node_labels);
+            let new_label: Label = get_new_label(adjs, node_labels);
         
 
             if let Some(val) = node_labels.get_mut(node) {
@@ -91,7 +91,7 @@ pub fn label_prop(
 
         num_iters += 1;
         println!("completed {} iters", num_iters);
-        if (node_labels == prior_labels) || (num_iters == 1000) {
+        if (node_labels == prior_labels) || (num_iters == 3) {
             //if num_iters == 1000 {
             break;
         }
