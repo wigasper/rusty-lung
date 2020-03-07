@@ -1,4 +1,3 @@
-//p//ub m//od la//belprop {
 extern crate rand;
 
 use rand::seq::SliceRandom;
@@ -47,6 +46,7 @@ fn update_nodes(
     node_labels: &mut HashMap<Node, Label>,
     nodes: &Vec<Node>,
 ) {
+    
     for node in nodes.iter() {
         // get the label with the greatest frequency among neighbors
         let adjs = adj_list.get(&node).unwrap();
@@ -70,6 +70,8 @@ pub fn label_prop(
     let mut rng = thread_rng();
     let mut nodes: Vec<Node> = Vec::new();
 
+    let max_iters = 3;
+
     for (node, _adjs) in adj_list.iter() {
         nodes.push(node.to_owned());
     }
@@ -79,7 +81,9 @@ pub fn label_prop(
     loop {
         // TODO: track label change better here, maybe in update_nodes
         // this uses up time for the big clone
-        let prior_labels = node_labels.clone();
+        // let's be honest the algorithm doesn't converge ever 
+        // at this point so just comment this out
+        //let prior_labels = node_labels.clone();
 
         // shuffle nodes vec for random updating
         // TODO: cutting shuffle saves a little time, maybe there
@@ -91,8 +95,8 @@ pub fn label_prop(
 
         num_iters += 1;
         println!("completed {} iters", num_iters);
-        if (node_labels == prior_labels) || (num_iters == 3) {
-            //if num_iters == 1000 {
+        //if (node_labels == prior_labels) || (num_iters == 3) {
+        if num_iters == max_iters {
             break;
         }
     }

@@ -11,12 +11,12 @@ mod tests {
     //use super::label_prop::label_prop::*;
     //use super::graphbuilder::*;
 
-    use std::collections::{HashMap, HashSet};
+    use std::collections::HashMap;
 
-    #[test]
-    fn label_prop_0() {
-        let mut adj_list: HashMap<Node, HashSet<Node>> = HashMap::new();
-    }
+    //#[test]
+    //fn label_prop_0() {
+    //    let mut adj_list: HashMap<Node, HashSet<Node>> = HashMap::new();
+    //}
 
     #[test]
     fn test_get_bounds_0() {

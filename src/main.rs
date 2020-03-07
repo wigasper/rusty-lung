@@ -1,5 +1,5 @@
 //pub use crate::lib::graphbuilder::*;
-use bioseg::label_prop::*;
+//use bioseg::label_prop::*;
 use bioseg::utils::*;
 use std::env;
 
@@ -8,11 +8,11 @@ fn main() {
     let fp_in = &args[1];
     let fp_out = &args[2];
     let radius: u32 = args[3].parse().unwrap_or_else(|why| {
-        panic!("msg here");
+        panic!("Could not parse {} to u32", why);
     });
 
     let threshold: u8 = args[4].parse().unwrap_or_else(|why| {
-        panic!("msg here");
+        panic!("Could not parse {} to u8", why);
     });
 
     segment_image(fp_in, fp_out, radius, threshold);

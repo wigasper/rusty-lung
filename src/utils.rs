@@ -4,7 +4,7 @@ use crate::label_prop::*;
 use image::*;
 
 use std::collections::{HashMap, HashSet};
-use std::iter::FromIterator;
+// use std::iter::FromIterator;
 
 type Node = u32;
 type Label = u32;
@@ -67,7 +67,8 @@ fn check_neighbors(
     node: &Node,
     nodes: &HashMap<Node, Coord>,
     nodes_lookup: &HashMap<Coord, Node>,
-    node_labels: &mut HashMap<Node, Label>,
+    // TODO: delete node_labels if unneeded in the future
+    _node_labels: &mut HashMap<Node, Label>,
     img: &GrayImage,
     adj_list: &mut HashMap<Node, Vec<Node>>,
     radius: u32,
@@ -152,7 +153,7 @@ pub fn build_adj_list(
         nodes_lookup.insert((pixel.0, pixel.1), node_id);
         // new label init, give each node its pixel val
         // TODO: try this as u8 if good
-        let mut label = img.get_pixel(pixel.0, pixel.1).channels()[0] as u32;
+        let label = img.get_pixel(pixel.0, pixel.1).channels()[0] as u32;
         node_labels.insert(node_id, label);
         adj_list.insert(node_id, Vec::new());
         node_id += 1;
