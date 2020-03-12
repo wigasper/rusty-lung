@@ -14,9 +14,9 @@ type Coord = (u32, u32);
 
 pub fn segment_image(file_path: &str, out_path: &str, radius: u32, threshold: u8) {
     // using this initially produces a very interesting result:
-    let (adj_list, node_coords, node_labels, img) = build_adj_list(&file_path, &1, &5);
+    //let (adj_list, node_coords, node_labels, img) = build_adj_list(&file_path, &1, &5);
 
-    //let (adj_list, node_coords, node_labels, img) = build_adj_list(&file_path, &radius, &threshold);
+    let (adj_list, node_coords, node_labels, img) = build_adj_list(&file_path, &radius, &threshold);
 
     // communities is a hashmap of node: label
     let communities = label_prop(&adj_list, node_labels);
@@ -34,26 +34,12 @@ pub fn segment_image(file_path: &str, out_path: &str, radius: u32, threshold: u8
         }
     }
 
-    //let mut unique_labels: HashSet<u32> = HashSet::new();
-
-    //for (_key, val) in communities.iter() {
-    //    unique_labels.insert(val.to_owned());
-    // }
-
-    //let mut comm_id_map = HashMap::new();
-    //let mut comm_id: u64 = 0;
-
-    //for unique_lab in unique_labels.iter() {
-    //    comm_id_map.insert(unique_lab, comm_id);
-    //    comm_id += 1;
-    //}
-
     println!("Found {} communities", community_members.len());
 
     let mut output = ImageBuffer::<Luma<u8>, Vec<u8>>::new(img.width(), img.height());
 
     for (comm, nodes) in community_members.iter() {
-        let (border_pixels, internal_pixels) = get_border_pixels(nodes, &node_coords);
+        let (border_pixels, internal_pixels) = get_border_coords(nodes, &node_coords);
 
         for border_pixel in border_pixels.iter() {
             let pixel = output.get_pixel_mut(border_pixel.0, border_pixel.1);
@@ -68,20 +54,13 @@ pub fn segment_image(file_path: &str, out_path: &str, radius: u32, threshold: u8
         }
     }
 
-    //for (node, coord) in node_coords.iter() {
-    //    let pixel = output.get_pixel_mut(coord.0, coord.1);
-    //    let pixel_val =
-    //        255 - (255 / (comm_id_map.get(communities.get(node).unwrap()).unwrap() + 1));
-    //    *pixel = image::Luma([pixel_val as u8]);
-    //}
-
     output.save(out_path).unwrap();
 }
 
 // TODO: need logic here to deal with one pixel communities
-pub fn get_border_pixels(nodes: &Vec<Node>, node_coords: &HashMap<Node, Coord>) -> (Vec<Coord>, Vec<Coord>) {
-    let mut border_pixels: Vec<Coord> = Vec::new();
-    let mut internal_pixels: Vec<Coord> = Vec::new();
+pub fn get_border_coords(nodes: &Vec<Node>, node_coords: &HashMap<Node, Coord>) -> (Vec<Coord>, Vec<Coord>) {
+    let mut border_coords: Vec<Coord> = Vec::new();
+    let mut internal_coords: Vec<Coord> = Vec::new();
 
     // TODO to_owned() probably faster here??
     let coord_list: Vec<Coord> = nodes
@@ -96,7 +75,7 @@ pub fn get_border_pixels(nodes: &Vec<Node>, node_coords: &HashMap<Node, Coord>) 
     if y_vals.len() > 2 {
         for coord in coord_list.iter() {
             if coord.1 == y_vals[0] || coord.1 == y_vals[y_vals.len() - 1] {
-                border_pixels.push(coord.to_owned());
+                border_coords.push(coord.to_owned());
             }
         }
     
@@ -112,23 +91,23 @@ pub fn get_border_pixels(nodes: &Vec<Node>, node_coords: &HashMap<Node, Coord>) 
                 .map(|&coord| coord.0)
                 .collect();
             x_vals.sort();
-            border_pixels.push((x_vals[0], y.to_owned()));
-            border_pixels.push((x_vals[x_vals.len() - 1], y.to_owned()));
+            border_coords.push((x_vals[0], y.to_owned()));
+            border_coords.push((x_vals[x_vals.len() - 1], y.to_owned()));
             
             if x_vals.len() > 2 {
                 x_vals.remove(0);
                 x_vals.remove(x_vals.len()-1);
                 
                 for x in x_vals.iter() {
-                    internal_pixels.push((x.to_owned(), y.to_owned()));
+                    internal_coords.push((x.to_owned(), y.to_owned()));
                 }
             }
         }
     } else {
-        border_pixels = coord_list;
+        border_coords = coord_list;
     }
     
-    (border_pixels, internal_pixels)
+    (border_coords, internal_coords)
 }
 
 pub fn init_abstraction(file_path: &str) {
@@ -220,6 +199,10 @@ fn check_neighbors(
     }
 }
 
+//pub fn build_adj_list(communities: HashMap<Label, Vec<Node>>, node_coords: HashMap<Node, Coord>) {
+    
+//}
+// rebuild this to take nodes
 pub fn build_adj_list(
     file_path: &str,
     radius: &u32,
