@@ -46,7 +46,6 @@ fn update_nodes(
     node_labels: &mut HashMap<Node, Label>,
     nodes: &Vec<Node>,
 ) {
-    
     for node in nodes.iter() {
         // get the label with the greatest frequency among neighbors
         let adjs = adj_list.get(&node).unwrap();
@@ -54,7 +53,6 @@ fn update_nodes(
         //let mut new_label: Label = node.to_owned();
         if !adjs.is_empty() {
             let new_label: Label = get_new_label(adjs, node_labels);
-        
 
             if let Some(val) = node_labels.get_mut(node) {
                 *val = new_label;
@@ -81,7 +79,7 @@ pub fn label_prop(
     loop {
         // TODO: track label change better here, maybe in update_nodes
         // this uses up time for the big clone
-        // let's be honest the algorithm doesn't converge ever 
+        // let's be honest the algorithm doesn't converge ever
         // at this point so just comment this out
         //let prior_labels = node_labels.clone();
 
