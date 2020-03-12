@@ -49,7 +49,7 @@ pub fn segment_image(file_path: &str, out_path: &str, radius: u32, threshold: u8
 
         for internal_pixel in internal_pixels.iter() {
             let pixel = output.get_pixel_mut(internal_pixel.0, internal_pixel.1);
-            let pixel_val: u8 = 255;
+            let pixel_val: u8 = 240;
             *pixel = image::Luma([pixel_val]);
         }
     }
@@ -62,7 +62,6 @@ pub fn get_border_coords(nodes: &Vec<Node>, node_coords: &HashMap<Node, Coord>) 
     let mut border_coords: Vec<Coord> = Vec::new();
     let mut internal_coords: Vec<Coord> = Vec::new();
 
-    // TODO to_owned() probably faster here??
     let coord_list: Vec<Coord> = nodes
         .iter()
         .map(|&node| node_coords.get(&node).unwrap().to_owned())
@@ -80,7 +79,7 @@ pub fn get_border_coords(nodes: &Vec<Node>, node_coords: &HashMap<Node, Coord>) 
         }
     
 
-        // TODO: this first one seems bad
+        // TODO: this first one seems bad, moving an entire vec
         y_vals.remove(0);
         y_vals.remove(y_vals.len() - 1);
 
@@ -99,7 +98,13 @@ pub fn get_border_coords(nodes: &Vec<Node>, node_coords: &HashMap<Node, Coord>) 
                 x_vals.remove(x_vals.len()-1);
                 
                 for x in x_vals.iter() {
-                    internal_coords.push((x.to_owned(), y.to_owned()));
+                    let coord_above: Coord = (x.to_owned(), y.to_owned() + 1);
+                    let coord_below: Coord = (x.to_owned(), y.to_owned() - 1);
+                    if coord_list.contains(&coord_above) || coord_list.contains(&coord_below) {
+                        internal_coords.push((x.to_owned(), y.to_owned()));
+                    } else {
+                        border_coords.push((x.to_owned(), y.to_owned()));
+                    }
                 }
             }
         }
@@ -231,8 +236,8 @@ pub fn build_adj_list(
         nodes_lookup.insert((pixel.0, pixel.1), node_id);
         // new label init, give each node its pixel val
         // TODO: try this as u8 if good
-        let label = img.get_pixel(pixel.0, pixel.1).channels()[0] as u32;
-        //let label = node_id;
+        //let label = img.get_pixel(pixel.0, pixel.1).channels()[0] as u32;
+        let label = node_id;
         node_labels.insert(node_id, label);
         adj_list.insert(node_id, Vec::new());
         node_id += 1;
