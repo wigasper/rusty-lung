@@ -63,12 +63,18 @@ fn update_nodes(
 
 pub fn label_prop(
     adj_list: &HashMap<Node, Vec<Node>>,
-    mut node_labels: HashMap<Node, Label>,
 ) -> HashMap<Node, Label> {
+    let mut node_labels: HashMap<Node, Label> = HashMap::new();
+   
+    // init, each node is labeled with its name
+    for (node, _) in adj_list.iter() {
+        node_labels.insert(node.to_owned(), node.to_owned());
+    }
+
     let mut rng = thread_rng();
     let mut nodes: Vec<Node> = Vec::new();
 
-    let max_iters = 3;
+    let max_iters = 30;
 
     for (node, _adjs) in adj_list.iter() {
         nodes.push(node.to_owned());
