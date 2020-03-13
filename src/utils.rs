@@ -115,10 +115,6 @@ pub fn get_border_coords(nodes: &Vec<Node>, node_coords: &HashMap<Node, Coord>) 
     (border_coords, internal_coords)
 }
 
-pub fn init_abstraction(file_path: &str) {
-    // do nothing
-}
-
 pub fn get_bounds(value: u32, max: u32, radius: u32) -> (u32, u32) {
     let mut min_bound: u32 = 0;
     let mut max_bound: u32 = max;
@@ -142,7 +138,7 @@ pub fn get_bounds(value: u32, max: u32, radius: u32) -> (u32, u32) {
 //    radicand.sqrt()
 //}
 
-fn check_neighbors(
+fn check_neighbors2(
     node: &Node,
     nodes: &HashMap<Node, Coord>,
     nodes_lookup: &HashMap<Coord, Node>,
@@ -204,26 +200,8 @@ fn check_neighbors(
     }
 }
 
-//pub fn build_adj_list(communities: HashMap<Label, Vec<Node>>, node_coords: HashMap<Node, Coord>) {
-    
-//}
-// rebuild this to take nodes
-pub fn build_adj_list(
-    file_path: &str,
-    radius: &u32,
-    threshold: &u8,
-) -> (
-    HashMap<Node, Vec<Node>>,
-    HashMap<Node, Coord>,
-    HashMap<Node, Label>,
-    GrayImage,
-) {
+pub fn init_abstraction(file_path: &str) {
     let img = image::open(file_path).unwrap().to_luma();
-
-    // TODO: there is a max possible size here for any given radius, maybe should
-    // make this with that size
-    let mut adj_list: HashMap<Node, Vec<Node>> = HashMap::new();
-
     // init nodes
     let mut nodes: HashMap<Node, Coord> = HashMap::new();
     let mut nodes_lookup: HashMap<Coord, Node> = HashMap::new();
@@ -243,18 +221,82 @@ pub fn build_adj_list(
         node_id += 1;
     }
 
-    for (node, _coord) in nodes.iter() {
-        check_neighbors(
-            &node,
-            &nodes,
-            &nodes_lookup,
-            &mut node_labels,
-            &img,
-            &mut adj_list,
-            radius.to_owned(),
-            threshold.to_owned(),
-        );
+// do nothing
+}
+
+pub fn get_group_means(pixels: &Vec<Coord>) -> (u32, u32) {
+    let x_sum: f32 = 0.0;
+    pixels.iter().map(|pix| x_sum += pix.0 as f32);
+    let x_mean: u32 = (x_sum / pixels.len() as f32) as u32;
+    
+    let y_sum: f32 = 0.0;
+    pixels.iter().map(|pix| y_sum += pix.0 as f32);
+    let y_mean: u32 = (y_sum / pixels.len() as f32) as u32;
+
+    (x_mean, y_mean)
+}
+//pub fn build_adj_list(communities: HashMap<Label, Vec<Node>>, node_coords: HashMap<Node, Coord>) {
+    
+//}
+// rebuild this to take nodes
+pub fn build_adj_list(
+    nodes: &HashMap<Label, Vec<Coord>>,
+    img: &GrayImage,
+    //nodes_lookup: HashMap<Coord, Node>,
+    radius: &u32,
+    threshold: &u8,
+) -> (
+    HashMap<Node, Vec<Node>>,
+    HashMap<Node, Coord>,
+    HashMap<Node, Label>,
+    GrayImage,
+) {
+        // TODO: there is a max possible size here for any given radius, maybe should
+    // make this with that size
+    let mut adj_list: HashMap<Node, Vec<Node>> = HashMap::new();
+    
+    // center coordinates
+    let mut node_centers: HashMap<Node, Coord> = HashMap::new();
+    // lookup nodes for any given center coord, will use this later
+    let mut node_centers_lookup: HashMap<Coord, Node> = HashMap::new();
+
+    // get the center coord for each node
+    for (node, pixels) in nodes.iter() {
+        let center_coords = get_group_means(pixels); 
+        node_centers.insert(node.to_owned(), center_coords);
+        node_centers_lookup.insert(center_coords, node.to_owned());
     }
+
+    // each node needs to get a luma value for comparison to other nodes
+    let mut node_values: HashMap<Node, u8>;
+
+    // get the mean luma value for each node
+    for (node, pixels) in nodes.iter() {
+        let sum: f32 = 0.0; 
+        pixels.iter().map(|pixel| {
+            sum += img.get_pixel(pixel.0, pixel.1).channels()[0] as f32;       
+        });
+        let mean: u8 = (sum / pixels.len() as f32) as u8;
+        
+        node_values.insert(node.to_owned(), mean);
+    }
+
+    // now need to check neighbors for the adjacency list
+
+    let mut node_labels: HashMap<Node, Label> = HashMap::new();
+
+    //for (node, _coord) in nodes.iter() {
+    //    check_neighbors(
+    //        &node,
+    //        &nodes,
+    //        &nodes_lookup,
+    //        &mut node_labels,
+    //        &img,
+    //        &mut adj_list,
+    //        radius.to_owned(),
+    //        threshold.to_owned(),
+    //    );
+    //}
 
     //let mut adj_list_out: HashMap<Node, Vec<Node>> = HashMap::new();
     //for (key, val) in adj_list.iter() {
