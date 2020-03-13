@@ -43,11 +43,22 @@ pub fn segment_image(file_path: &str, out_path: &str, radius: u32, threshold: u8
     let mut output = ImageBuffer::<Luma<u8>, Vec<u8>>::new(img.width(), img.height());
 
     for (comm, members) in community_members.iter() {
-        let mut node_coords = Vec::new();
+        //let mut node_coords = Vec::new();
+
 //////////////////////////////////////////////////////////
         // TODO: STOPPED HERE 
         // need to fix get_border coords
-        let (border_pixels, internal_pixels) = get_border_coords(members, &node_coords);
+        
+        // need to get all the coords for a particular community that is comprised of nodes
+        let mut member_coords: Vec<Coord> = Vec::new();
+        
+        for node in members.iter() {
+            for coord in nodes.get(node).unwrap().iter() {
+                member_coords.push(coord.to_owned());
+            }
+        }
+
+        let (border_pixels, internal_pixels) = get_border_coords(&member_coords);
 
         for border_pixel in border_pixels.iter() {
             let pixel = output.get_pixel_mut(border_pixel.0, border_pixel.1);
@@ -78,21 +89,21 @@ pub fn init_abstraction(img: &GrayImage) -> HashMap<Label, Vec<Coord>> {
 }
 
 // TODO: refine logic here to deal with one pixel communities?
-pub fn get_border_coords(nodes: &Vec<Node>, node_coords: &HashMap<Node, Coord>) -> (Vec<Coord>, Vec<Coord>) {
+pub fn get_border_coords(member_coords: &Vec<Coord>) -> (Vec<Coord>, Vec<Coord>) {
     let mut border_coords: Vec<Coord> = Vec::new();
     let mut internal_coords: Vec<Coord> = Vec::new();
 
-    let coord_list: Vec<Coord> = nodes
-        .iter()
-        .map(|&node| node_coords.get(&node).unwrap().to_owned())
-        .collect();
+    //let coord_list: Vec<Coord> = nodes
+    //    .iter()
+    //    .map(|&node| node_coords.get(&node).unwrap().to_owned())
+    //    .collect();
 
-    let mut y_vals: Vec<u32> = coord_list.iter().map(|coord| coord.1).collect();
+    let mut y_vals: Vec<u32> = member_coords.iter().map(|coord| coord.1).collect();
     y_vals.sort();
     y_vals.dedup();
 
     if y_vals.len() > 2 {
-        for coord in coord_list.iter() {
+        for coord in member_coords.iter() {
             if coord.1 == y_vals[0] || coord.1 == y_vals[y_vals.len() - 1] {
                 border_coords.push(coord.to_owned());
             }
@@ -104,7 +115,7 @@ pub fn get_border_coords(nodes: &Vec<Node>, node_coords: &HashMap<Node, Coord>) 
         y_vals.remove(y_vals.len() - 1);
 
         for y in y_vals.iter() {
-            let mut x_vals: Vec<u32> = coord_list
+            let mut x_vals: Vec<u32> = member_coords
                 .iter()
                 .filter(|&coord| &coord.1 == y)
                 .map(|&coord| coord.0)
@@ -120,7 +131,7 @@ pub fn get_border_coords(nodes: &Vec<Node>, node_coords: &HashMap<Node, Coord>) 
                 for x in x_vals.iter() {
                     let coord_above: Coord = (x.to_owned(), y.to_owned() + 1);
                     let coord_below: Coord = (x.to_owned(), y.to_owned() - 1);
-                    if coord_list.contains(&coord_above) || coord_list.contains(&coord_below) {
+                    if member_coords.contains(&coord_above) && member_coords.contains(&coord_below) {
                         internal_coords.push((x.to_owned(), y.to_owned()));
                     } else {
                         border_coords.push((x.to_owned(), y.to_owned()));
@@ -129,7 +140,7 @@ pub fn get_border_coords(nodes: &Vec<Node>, node_coords: &HashMap<Node, Coord>) 
             }
         }
     } else {
-        border_coords = coord_list;
+        border_coords = member_coords.to_owned();
     }
     
     (border_coords, internal_coords)
@@ -161,11 +172,11 @@ pub fn get_bounds(value: u32, max: u32, radius: u32) -> (u32, u32) {
 
 
 pub fn get_group_means(pixels: &Vec<Coord>) -> (u32, u32) {
-    let x_sum: f32 = 0.0;
+    let mut x_sum: f32 = 0.0;
     pixels.iter().map(|pix| x_sum += pix.0 as f32);
     let x_mean: u32 = (x_sum / pixels.len() as f32) as u32;
     
-    let y_sum: f32 = 0.0;
+    let mut y_sum: f32 = 0.0;
     pixels.iter().map(|pix| y_sum += pix.0 as f32);
     let y_mean: u32 = (y_sum / pixels.len() as f32) as u32;
 
@@ -226,12 +237,12 @@ pub fn build_adj_list(
     }
 
     // each node needs to get a luma value for comparison to other nodes
-    let mut node_values: HashMap<Node, u8>;
+    let mut node_values: HashMap<Node, u8> = HashMap::new();
 
     // get the mean luma value for each node
     // TODO would make sense to have this be its own function
     for (node, pixels) in nodes.iter() {
-        let sum: f32 = 0.0; 
+        let mut sum: f32 = 0.0; 
         pixels.iter().map(|pixel| {
             sum += img.get_pixel(pixel.0, pixel.1).channels()[0] as f32;       
         });
