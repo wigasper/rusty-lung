@@ -16,12 +16,16 @@ pub fn segment_image(file_path: &str, out_path: &str, radius: u32, threshold: u8
     // using this initially produces a very interesting result:
     //let (adj_list, node_coords, node_labels, img) = build_adj_list(&file_path, &1, &5);
 
+    println!("starting image load");
     let img = image::open(file_path).unwrap().to_luma();
     
+    println!("starting init abstraction");
     let nodes: HashMap<Label, Vec<Coord>> = init_abstraction(&img);
     
+    println!("starting adjacency list build");
     let adj_list = build_adj_list(&nodes, &img, &radius, &threshold);
 
+    println!("starting label prop");
     // communities is a hashmap of node: label
     let communities = label_prop(&adj_list);
 
@@ -43,12 +47,6 @@ pub fn segment_image(file_path: &str, out_path: &str, radius: u32, threshold: u8
     let mut output = ImageBuffer::<Luma<u8>, Vec<u8>>::new(img.width(), img.height());
 
     for (comm, members) in community_members.iter() {
-        //let mut node_coords = Vec::new();
-
-//////////////////////////////////////////////////////////
-        // TODO: STOPPED HERE 
-        // need to fix get_border coords
-        
         // need to get all the coords for a particular community that is comprised of nodes
         let mut member_coords: Vec<Coord> = Vec::new();
         
@@ -172,13 +170,13 @@ pub fn get_bounds(value: u32, max: u32, radius: u32) -> (u32, u32) {
 
 
 pub fn get_group_means(pixels: &Vec<Coord>) -> (u32, u32) {
-    let mut x_sum: f32 = 0.0;
-    pixels.iter().map(|pix| x_sum += pix.0 as f32);
-    let x_mean: u32 = (x_sum / pixels.len() as f32) as u32;
+    let x_vals: Vec<f32> = pixels.iter().map(|pix| pix.0 as f32).collect();
+    let x_sum: f32 = x_vals.iter().sum();
+    let x_mean: u32 = (x_sum / x_vals.len() as f32) as u32;
     
-    let mut y_sum: f32 = 0.0;
-    pixels.iter().map(|pix| y_sum += pix.0 as f32);
-    let y_mean: u32 = (y_sum / pixels.len() as f32) as u32;
+    let y_vals: Vec<f32> = pixels.iter().map(|pix| pix.1 as f32).collect();
+    let y_sum: f32 = y_vals.iter().sum();
+    let y_mean: u32 = (y_sum / x_vals.len() as f32) as u32;
 
     (x_mean, y_mean)
 }
@@ -229,28 +227,31 @@ pub fn build_adj_list(
     // lookup nodes for any given center coord, will use this later
     let mut node_centers_lookup: HashMap<Coord, Node> = HashMap::new();
 
+    println!("build_adj_list - starting center coord loop");
     // get the center coord for each node
     for (node, pixels) in nodes.iter() {
         let center_coords = get_group_means(pixels); 
         node_centers.insert(node.to_owned(), center_coords);
         node_centers_lookup.insert(center_coords, node.to_owned());
+        // init adj_list
+        adj_list.insert(node.to_owned(), Vec::new());
     }
 
     // each node needs to get a luma value for comparison to other nodes
     let mut node_values: HashMap<Node, u8> = HashMap::new();
 
+    println!("build_adj_list - starting mean luma value loop");
     // get the mean luma value for each node
     // TODO would make sense to have this be its own function
     for (node, pixels) in nodes.iter() {
-        let mut sum: f32 = 0.0; 
-        pixels.iter().map(|pixel| {
-            sum += img.get_pixel(pixel.0, pixel.1).channels()[0] as f32;       
-        });
+        let pixel_vals: Vec<f32> = pixels.iter().map(|pix| img.get_pixel(pix.0, pix.1).channels()[0] as f32).collect();
+        let sum: f32 = pixel_vals.iter().sum();
         let mean: u8 = (sum / pixels.len() as f32) as u8;
         
         node_values.insert(node.to_owned(), mean);
     }
 
+    println!("build_adj_list - starting check_neighbors loop");
     // now need to check neighbors for the adjacency list
     for (node, pixels) in nodes.iter() {
         check_neighbors(&node_centers, &node_centers_lookup, 
