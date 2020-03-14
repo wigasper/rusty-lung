@@ -37,7 +37,7 @@ pub fn segment_image(file_path: &str, out_path: &str, mut radius: u32, threshold
     // after each iteration the communities produced by the label prop
     // algorithm become nodes for input into the subsequent run
     loop {
-        adj_list = build_adj_list(&nodes, &img, &radius, &threshold);
+        adj_list = build_adj_list(&nodes, &img, radius, threshold);
         communities = label_prop(&adj_list);
         
         // clear community_members and add data back
@@ -137,7 +137,7 @@ pub fn init_abstraction(img: &GrayImage) -> HashMap<Label, Vec<Coord>> {
 
 // takes a vector of grouped pixel coordinates and returns the pixels that comprise the 
 // border of the group and the internal pixels
-pub fn get_border_coords(member_coords: &Vec<Coord>) -> (Vec<Coord>, Vec<Coord>) {
+pub fn get_border_coords(member_coords: &[Coord]) -> (Vec<Coord>, Vec<Coord>) {
     let mut border_coords: Vec<Coord> = Vec::new();
     let mut internal_coords: Vec<Coord> = Vec::new();
 
@@ -210,7 +210,7 @@ pub fn get_bounds(value: u32, max: u32, radius: u32) -> (u32, u32) {
 // this could possibly use some work as there might be better ways
 // to find a group's "center"
 // TODO: repetition here
-pub fn get_group_means(pixels: &Vec<Coord>) -> (u32, u32) {
+pub fn get_group_means(pixels: &[Coord]) -> (u32, u32) {
     let x_vals: Vec<f32> = pixels.iter().map(|pix| pix.0 as f32).collect();
     let x_sum: f32 = x_vals.iter().sum();
     let x_mean: u32 = (x_sum / x_vals.len() as f32) as u32;
@@ -267,8 +267,8 @@ pub fn check_neighbors(
 pub fn build_adj_list(
     nodes: &HashMap<Label, Vec<Coord>>,
     img: &GrayImage,
-    radius: &u32,
-    threshold: &u8,
+    radius: u32,
+    threshold: u8,
 ) -> HashMap<Node, Vec<Node>> {
     // adjacency list, end goal here
     let mut adj_list: HashMap<Node, Vec<Node>> = HashMap::new();
