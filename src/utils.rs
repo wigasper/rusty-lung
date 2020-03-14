@@ -20,10 +20,10 @@ pub fn segment_image(file_path: &str, out_path: &str, radius: u32, threshold: u8
 
     let nodes: HashMap<Label, Vec<Coord>> = init_abstraction(&img);
 
-    let adj_list = build_adj_list(&nodes, &img, &radius, &threshold);
+    let mut adj_list = build_adj_list(&nodes, &img, &radius, &threshold);
 
     // communities is a hashmap of node: label
-    let communities = label_prop(&adj_list);
+    let mut communities = label_prop(&adj_list);
 
     // need to reverse communities here
     let mut community_members: HashMap<Label, Vec<Node>> = HashMap::new();
@@ -40,6 +40,26 @@ pub fn segment_image(file_path: &str, out_path: &str, radius: u32, threshold: u8
 
     println!("Found {} communities", community_members.len());
 
+    //////////////////////////////////////////////////////////
+    // made a wonderful first run, what to do now?
+    
+    // re-abstract, each community needs to become a node.
+    // to do that, all the vecs from all the nodes in each community need to be combined
+    let new_nodes: HashMap<Label, Vec<Coord>> = comm_abstraction(&nodes, &community_members);
+    let new_radius: u32 = ((radius as f32) * 10.0) as u32;
+    adj_list = build_adj_list(&new_nodes, &img, &new_radius, &threshold);
+    communities = label_prop(&adj_list);
+    community_members = HashMap::new();
+    for (_key, val) in communities.iter() {
+        community_members.insert(val.to_owned(), Vec::new());
+    }
+    for (key, val) in communities.iter() {
+        if let Some(node_vec) = community_members.get_mut(val) {
+            node_vec.push(key.to_owned());
+        }
+    }
+    println!("Found {} communities", community_members.len());
+    //////////////////////////////////////////////////////////
     let mut output = ImageBuffer::<Luma<u8>, Vec<u8>>::new(img.width(), img.height());
 
     for (comm, members) in community_members.iter() {
@@ -68,6 +88,26 @@ pub fn segment_image(file_path: &str, out_path: &str, radius: u32, threshold: u8
     }
 
     output.save(out_path).unwrap();
+}
+
+pub fn comm_abstraction(prior_nodes: &HashMap<Label, Vec<Coord>>, 
+                        communities: &HashMap<Label, Vec<Node>>) -> HashMap<Label, Vec<Coord>> {
+    let mut nodes_out: HashMap<Label, Vec<Coord>> = HashMap::new();
+
+    for (community, nodes) in communities.iter() {
+        //nodes.insert(community.to_owned(), Vec::new());
+        
+        let mut coords: Vec<Coord> = Vec::new();
+        for node in nodes.iter() {
+            for coord in prior_nodes.get(node).unwrap().iter() {
+                // TODO: to_owned here too much??
+                coords.push(coord.to_owned());
+            }
+        }
+        nodes_out.insert(community.to_owned(), coords);
+    }
+
+    nodes_out
 }
 
 pub fn init_abstraction(img: &GrayImage) -> HashMap<Label, Vec<Coord>> {
