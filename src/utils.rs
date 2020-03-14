@@ -47,9 +47,11 @@ pub fn segment_image(file_path: &str, out_path: &str, radius: u32, threshold: u8
     // to do that, all the vecs from all the nodes in each community need to be combined
     let new_nodes: HashMap<Label, Vec<Coord>> = comm_abstraction(&nodes, &community_members);
     let new_radius: u32 = ((radius as f32) * 10.0) as u32;
+    adj_list.clear();
     adj_list = build_adj_list(&new_nodes, &img, &new_radius, &threshold);
+    communities.clear();
     communities = label_prop(&adj_list);
-    community_members = HashMap::new();
+    community_members.clear();
     for (_key, val) in communities.iter() {
         community_members.insert(val.to_owned(), Vec::new());
     }
@@ -67,7 +69,8 @@ pub fn segment_image(file_path: &str, out_path: &str, radius: u32, threshold: u8
         let mut member_coords: Vec<Coord> = Vec::new();
 
         for node in members.iter() {
-            for coord in nodes.get(node).unwrap().iter() {
+            //for coord in nodes.get(node).unwrap().iter() {
+            for coord in new_nodes.get(node).unwrap().iter() {
                 member_coords.push(coord.to_owned());
             }
         }
