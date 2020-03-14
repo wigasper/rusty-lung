@@ -8,15 +8,8 @@ mod tests {
     type Label = u32;
     pub use crate::label_prop::*;
     pub use crate::utils::*;
-    //use super::label_prop::label_prop::*;
-    //use super::graphbuilder::*;
 
     use std::collections::HashMap;
-
-    //#[test]
-    //fn label_prop_0() {
-    //    let mut adj_list: HashMap<Node, HashSet<Node>> = HashMap::new();
-    //}
 
     #[test]
     fn test_get_bounds_0() {
@@ -27,12 +20,6 @@ mod tests {
     #[test]
     fn test_get_bounds_1() {
         assert_eq!((23, 30), get_bounds(28, 30, 5))
-    }
-
-    #[test]
-    fn test0() {
-        //build_graph("/Users/wigasper/repos/bio-segmenter/36pixel.png".to_owned());
-        //let adj_list = build_adj_list("/media/storage/bio-segmenter/36pixel.png".to_owned(), 3, 10);
     }
 
     #[test]
@@ -69,17 +56,5 @@ mod tests {
 
         let result: Label = 3;
         assert_eq!(result, get_new_label(&adjs, &labs));
-    }
-    #[test]
-    fn test_build_adj_list() {
-        //let adj_list = build_adj_list("16pixel.png", &2, &30);
-        //segment_image("ct_scan.png", 10, 20);
-        //for (key, val) in adj_list.iter() {
-        //    print!("{}: ", key);
-        //   for node in val.iter() {
-        //      print!("{} ", node);
-        //}
-        // println!();
-        // }
     }
 }
