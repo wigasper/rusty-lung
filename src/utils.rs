@@ -3,74 +3,79 @@ extern crate image;
 use crate::label_prop::*;
 use image::*;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 // use std::iter::FromIterator;
 
 type Node = u32;
 type Label = u32;
-// change Label to u8 to test speed
-//type Label = u8;
 type Coord = (u32, u32);
 
-pub fn segment_image(file_path: &str, out_path: &str, radius: u32, threshold: u8) {
+// the driver function for this algorithm. takes an image, abstracts it to a graph,
+// runs label propagation on the graph, abstracts the resulting communities to a graph,
+// runs label propagation again, repeats this process the desired number of times, 
+// and then writes the output
+pub fn segment_image(file_path: &str, out_path: &str, mut radius: u32, threshold: u8) {
     // using this initially produces a very interesting result:
     //let (adj_list, node_coords, node_labels, img) = build_adj_list(&file_path, &1, &5);
-
+    
+    // load image
     let img = image::open(file_path).unwrap().to_luma();
+    
+    // initial abstraction of image to graph
+    let mut nodes: HashMap<Label, Vec<Coord>> = init_abstraction(&img);
 
-    let nodes: HashMap<Label, Vec<Coord>> = init_abstraction(&img);
-
-    let mut adj_list = build_adj_list(&nodes, &img, &radius, &threshold);
-
-    // communities is a hashmap of node: label
-    let mut communities = label_prop(&adj_list);
-
-    // need to reverse communities here
+    // TODO is this the most efficient thing to do here?
+    let mut adj_list: HashMap<Node, Vec<Node>>;
+    let mut communities: HashMap<Node, Label>;
     let mut community_members: HashMap<Label, Vec<Node>> = HashMap::new();
 
-    for (_key, val) in communities.iter() {
-        community_members.insert(val.to_owned(), Vec::new());
-    }
+    // TODO: take this as command line arg
+    let max_iters: u8 = 2;
+    let mut num_iters: u8 = 0;
 
-    for (key, val) in communities.iter() {
-        if let Some(node_vec) = community_members.get_mut(val) {
-            node_vec.push(key.to_owned());
+    // run label prop for the desired number of iterations.
+    // after each iteration the communities produced by the label prop
+    // algorithm become nodes for input into the subsequent run
+    loop {
+        adj_list = build_adj_list(&nodes, &img, &radius, &threshold);
+        communities = label_prop(&adj_list);
+        
+        // clear community_members and add data back
+        community_members.clear();
+        for (_key, val) in communities.iter() {
+            community_members.insert(val.to_owned(), Vec::new());
         }
-    }
-
-    println!("Found {} communities", community_members.len());
-
-    //////////////////////////////////////////////////////////
-    // made a wonderful first run, what to do now?
-    
-    // re-abstract, each community needs to become a node.
-    // to do that, all the vecs from all the nodes in each community need to be combined
-    let new_nodes: HashMap<Label, Vec<Coord>> = comm_abstraction(&nodes, &community_members);
-    let new_radius: u32 = ((radius as f32) * 10.0) as u32;
-    adj_list.clear();
-    adj_list = build_adj_list(&new_nodes, &img, &new_radius, &threshold);
-    communities.clear();
-    communities = label_prop(&adj_list);
-    community_members.clear();
-    for (_key, val) in communities.iter() {
-        community_members.insert(val.to_owned(), Vec::new());
-    }
-    for (key, val) in communities.iter() {
-        if let Some(node_vec) = community_members.get_mut(val) {
-            node_vec.push(key.to_owned());
+        for (key, val) in communities.iter() {
+            if let Some(node_vec) = community_members.get_mut(val) {
+                node_vec.push(key.to_owned());
+            }
         }
-    }
-    println!("Found {} communities", community_members.len());
-    //////////////////////////////////////////////////////////
-    let mut output = ImageBuffer::<Luma<u8>, Vec<u8>>::new(img.width(), img.height());
+        println!("Found {} communities", community_members.len());
+        
+        num_iters += 1;
+        if num_iters == max_iters {
+            break;
+        }
 
-    for (comm, members) in community_members.iter() {
-        // need to get all the coords for a particular community that is comprised of nodes
+        nodes = communities_to_nodes(&nodes, &community_members);
+        radius = ((radius as f32) * 10.0) as u32;
+    }
+
+    write_output(out_path, &community_members, &nodes, img.dimensions());
+}
+
+// writes output image
+pub fn write_output(out_path: &str,
+                    community_members: &HashMap<Label, Vec<Node>>, 
+                    nodes: &HashMap<Label, Vec<Coord>>, 
+                    dimensions: (u32, u32),) {
+    let mut output = ImageBuffer::<Luma<u8>, Vec<u8>>::new(dimensions.0, dimensions.1);
+
+    for (_comm, members) in community_members.iter() {
         let mut member_coords: Vec<Coord> = Vec::new();
 
         for node in members.iter() {
-            //for coord in nodes.get(node).unwrap().iter() {
-            for coord in new_nodes.get(node).unwrap().iter() {
+            for coord in nodes.get(node).unwrap().iter() {
                 member_coords.push(coord.to_owned());
             }
         }
@@ -93,13 +98,17 @@ pub fn segment_image(file_path: &str, out_path: &str, radius: u32, threshold: u8
     output.save(out_path).unwrap();
 }
 
-pub fn comm_abstraction(prior_nodes: &HashMap<Label, Vec<Coord>>, 
-                        communities: &HashMap<Label, Vec<Node>>) -> HashMap<Label, Vec<Coord>> {
+// takes the communities resulting from label propagation and turns them into
+// nodes for the next round
+pub fn communities_to_nodes(
+    prior_nodes: &HashMap<Label, Vec<Coord>>,
+    communities: &HashMap<Label, Vec<Node>>,
+) -> HashMap<Label, Vec<Coord>> {
     let mut nodes_out: HashMap<Label, Vec<Coord>> = HashMap::new();
 
     for (community, nodes) in communities.iter() {
         //nodes.insert(community.to_owned(), Vec::new());
-        
+
         let mut coords: Vec<Coord> = Vec::new();
         for node in nodes.iter() {
             for coord in prior_nodes.get(node).unwrap().iter() {
@@ -113,11 +122,11 @@ pub fn comm_abstraction(prior_nodes: &HashMap<Label, Vec<Coord>>,
     nodes_out
 }
 
+// initial abstraction function. turns an image into a graph.
 pub fn init_abstraction(img: &GrayImage) -> HashMap<Label, Vec<Coord>> {
     let mut nodes: HashMap<Label, Vec<Coord>> = HashMap::new();
     let mut current_label: Label = 0;
-    
-    let num_pixels = img.width() * img.height();
+
     for pixel in img.enumerate_pixels() {
         nodes.insert(current_label, vec![(pixel.0, pixel.1)]);
         current_label += 1;
@@ -126,7 +135,8 @@ pub fn init_abstraction(img: &GrayImage) -> HashMap<Label, Vec<Coord>> {
     nodes
 }
 
-// TODO: refine logic here to deal with one pixel communities?
+// takes a vector of grouped pixel coordinates and returns the pixels that comprise the 
+// border of the group and the internal pixels
 pub fn get_border_coords(member_coords: &Vec<Coord>) -> (Vec<Coord>, Vec<Coord>) {
     let mut border_coords: Vec<Coord> = Vec::new();
     let mut internal_coords: Vec<Coord> = Vec::new();
@@ -179,6 +189,8 @@ pub fn get_border_coords(member_coords: &Vec<Coord>) -> (Vec<Coord>, Vec<Coord>)
     (border_coords, internal_coords)
 }
 
+// returns the bounds for neighbor checking, restricts the search space to
+// to 0..max
 pub fn get_bounds(value: u32, max: u32, radius: u32) -> (u32, u32) {
     let mut min_bound: u32 = 0;
     let mut max_bound: u32 = max;
@@ -194,6 +206,10 @@ pub fn get_bounds(value: u32, max: u32, radius: u32) -> (u32, u32) {
     (min_bound, max_bound)
 }
 
+// returns the x and y means for a group of pixels.
+// this could possibly use some work as there might be better ways
+// to find a group's "center"
+// TODO: repetition here
 pub fn get_group_means(pixels: &Vec<Coord>) -> (u32, u32) {
     let x_vals: Vec<f32> = pixels.iter().map(|pix| pix.0 as f32).collect();
     let x_sum: f32 = x_vals.iter().sum();
@@ -206,6 +222,9 @@ pub fn get_group_means(pixels: &Vec<Coord>) -> (u32, u32) {
     (x_mean, y_mean)
 }
 
+// searches for neighbors to each node that are within the radius 
+// and meet a certain criteria (in this case, the delta is less than 
+// the threshold) - in this case an edge is added between these nodes
 pub fn check_neighbors(
     node_centers: &HashMap<Node, Coord>,
     node_centers_lookup: &HashMap<Coord, Node>,
@@ -228,7 +247,10 @@ pub fn check_neighbors(
                 if &putative_neighbor != center
                     && node_centers_lookup.contains_key(&putative_neighbor)
                 {
-                    let neighbor: Node = node_centers_lookup.get(&putative_neighbor).unwrap().to_owned();
+                    let neighbor: Node = node_centers_lookup
+                        .get(&putative_neighbor)
+                        .unwrap()
+                        .to_owned();
                     let neighbor_val: i16 = node_values.get(&neighbor).unwrap().to_owned() as i16;
                     let delta: u8 = (node_val - neighbor_val).abs() as u8;
 
@@ -241,6 +263,7 @@ pub fn check_neighbors(
     }
 }
 
+// builds an adjacency list from nodes
 pub fn build_adj_list(
     nodes: &HashMap<Label, Vec<Coord>>,
     img: &GrayImage,
@@ -263,7 +286,7 @@ pub fn build_adj_list(
         // init adj_list
         adj_list.insert(node.to_owned(), Vec::new());
     }
-    
+
     // each node needs to get a luma value for comparison to other nodes
     let mut node_values: HashMap<Node, u8> = HashMap::new();
 
@@ -276,7 +299,7 @@ pub fn build_adj_list(
             .collect();
         let sum: f32 = pixel_vals.iter().sum();
         let mean: u8 = (sum / pixel_vals.len() as f32) as u8;
-        
+
         node_values.insert(node.to_owned(), mean);
     }
 
