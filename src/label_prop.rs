@@ -50,7 +50,6 @@ fn update_nodes(
         // get the label with the greatest frequency among neighbors
         let adjs = adj_list.get(&node).unwrap();
 
-        //let mut new_label: Label = node.to_owned();
         if !adjs.is_empty() {
             let new_label: Label = get_new_label(adjs, node_labels);
 
@@ -61,11 +60,9 @@ fn update_nodes(
     }
 }
 
-pub fn label_prop(
-    adj_list: &HashMap<Node, Vec<Node>>,
-) -> HashMap<Node, Label> {
+pub fn label_prop(adj_list: &HashMap<Node, Vec<Node>>) -> HashMap<Node, Label> {
     let mut node_labels: HashMap<Node, Label> = HashMap::new();
-   
+
     // init, each node is labeled with its name
     for (node, _) in adj_list.iter() {
         node_labels.insert(node.to_owned(), node.to_owned());
@@ -74,7 +71,7 @@ pub fn label_prop(
     let mut rng = thread_rng();
     let mut nodes: Vec<Node> = Vec::new();
 
-    let max_iters = 30;
+    let max_iters = 5;
 
     for (node, _adjs) in adj_list.iter() {
         nodes.push(node.to_owned());
