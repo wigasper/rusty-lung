@@ -6,7 +6,6 @@ use rand::thread_rng;
 use std::collections::HashMap;
 
 type Node = u32;
-//type Label = u32;
 type Label = u32;
 
 // TODO: is there something here where if a nodes adjacents all have one label we can
@@ -69,25 +68,22 @@ pub fn label_prop(adj_list: &HashMap<Node, Vec<Node>>) -> HashMap<Node, Label> {
     }
 
     let mut num_iters = 0;
-    // fit loop - continues until the labels don't change
+    
+    // fit loop
     loop {
-        // TODO: track label change better here, maybe in update_nodes
-        // this uses up time for the big clone
-        // let's be honest the algorithm doesn't converge ever
-        // at this point so just comment this out
-        //let prior_labels = node_labels.clone();
+        // change tracking could occur here. original label prop paper has 
+        // the algorithm terminate when the labels don't change. that doesn't 
+        // seem to be possible with the characteristics of this graph though
 
         // shuffle nodes vec for random updating
-        // TODO: cutting shuffle saves a little time, maybe there
-        // is a faster way to do this
         nodes.shuffle(&mut rng);
 
         // update nodes
         update_nodes(&adj_list, &mut node_labels, &nodes);
 
         num_iters += 1;
-        println!("completed {} iters", num_iters);
-        //if (node_labels == prior_labels) || (num_iters == 3) {
+        println!("Completed {} iters", num_iters);
+        
         if num_iters == max_iters {
             break;
         }
