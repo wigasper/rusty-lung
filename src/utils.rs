@@ -263,6 +263,26 @@ pub fn check_neighbors(
     }
 }
 
+// gets the value for each node that is used to compare the node
+// against other nodes in order to determine if there will be an edge
+// between the two nodes. currently this just uses the mean luma value
+pub fn get_node_values(nodes: &HashMap<Label, Vec<Coord>>, img: &GrayImage) -> HashMap<Node, u8> {
+    let mut node_values: HashMap<Node, u8> = HashMap::new();
+    
+    for (node, pixels) in nodes.iter() {
+        let pixel_vals: Vec<f32> = pixels
+            .iter()
+            .map(|pix| img.get_pixel(pix.0, pix.1).channels()[0] as f32)
+            .collect();
+        let sum: f32 = pixel_vals.iter().sum();
+        let mean: u8 = (sum / pixel_vals.len() as f32) as u8;
+
+        node_values.insert(node.to_owned(), mean);
+    }
+
+    node_values
+}
+
 // builds an adjacency list from nodes
 pub fn build_adj_list(
     nodes: &HashMap<Label, Vec<Coord>>,
@@ -270,12 +290,8 @@ pub fn build_adj_list(
     radius: u32,
     threshold: u8,
 ) -> HashMap<Node, Vec<Node>> {
-    // adjacency list, end goal here
     let mut adj_list: HashMap<Node, Vec<Node>> = HashMap::new();
-
-    // center coordinates
     let mut node_centers: HashMap<Node, Coord> = HashMap::new();
-    // lookup nodes for any given center coord, will use this later
     let mut node_centers_lookup: HashMap<Coord, Node> = HashMap::new();
 
     // get the center coord for each node
@@ -287,21 +303,8 @@ pub fn build_adj_list(
         adj_list.insert(node.to_owned(), Vec::new());
     }
 
-    // each node needs to get a luma value for comparison to other nodes
-    let mut node_values: HashMap<Node, u8> = HashMap::new();
-
-    // get the mean luma value for each node
-    // TODO would make sense to have this be its own function
-    for (node, pixels) in nodes.iter() {
-        let pixel_vals: Vec<f32> = pixels
-            .iter()
-            .map(|pix| img.get_pixel(pix.0, pix.1).channels()[0] as f32)
-            .collect();
-        let sum: f32 = pixel_vals.iter().sum();
-        let mean: u8 = (sum / pixel_vals.len() as f32) as u8;
-
-        node_values.insert(node.to_owned(), mean);
-    }
+    // each node needs to get a value for comparison to other nodes
+    let node_values: HashMap<Node, u8> = get_node_values(nodes, img);
 
     // now need to check neighbors for the adjacency list
     check_neighbors(
