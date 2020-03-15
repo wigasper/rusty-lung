@@ -12,15 +12,15 @@ type Coord = (u32, u32);
 
 // the driver function for this algorithm. takes an image, abstracts it to a graph,
 // runs label propagation on the graph, abstracts the resulting communities to a graph,
-// runs label propagation again, repeats this process the desired number of times, 
+// runs label propagation again, repeats this process the desired number of times,
 // and then writes the output
 pub fn segment_image(file_path: &str, out_path: &str, mut radius: u32, threshold: u8) {
     // using this initially produces a very interesting result:
     //let (adj_list, node_coords, node_labels, img) = build_adj_list(&file_path, &1, &5);
-    
+
     // load image
     let img = image::open(file_path).unwrap().to_luma();
-    
+
     // initial abstraction of image to graph
     let mut nodes: HashMap<Label, Vec<Coord>> = init_abstraction(&img);
 
@@ -39,7 +39,7 @@ pub fn segment_image(file_path: &str, out_path: &str, mut radius: u32, threshold
     loop {
         adj_list = build_adj_list(&nodes, &img, radius, threshold);
         communities = label_prop(&adj_list);
-        
+
         // clear community_members and add data back
         community_members.clear();
         for (_key, val) in communities.iter() {
@@ -51,7 +51,7 @@ pub fn segment_image(file_path: &str, out_path: &str, mut radius: u32, threshold
             }
         }
         println!("Found {} communities", community_members.len());
-        
+
         num_iters += 1;
         if num_iters == max_iters {
             break;
@@ -65,10 +65,12 @@ pub fn segment_image(file_path: &str, out_path: &str, mut radius: u32, threshold
 }
 
 // writes output image
-pub fn write_output(out_path: &str,
-                    community_members: &HashMap<Label, Vec<Node>>, 
-                    nodes: &HashMap<Label, Vec<Coord>>, 
-                    dimensions: (u32, u32),) {
+pub fn write_output(
+    out_path: &str,
+    community_members: &HashMap<Label, Vec<Node>>,
+    nodes: &HashMap<Label, Vec<Coord>>,
+    dimensions: (u32, u32),
+) {
     let mut output = ImageBuffer::<Luma<u8>, Vec<u8>>::new(dimensions.0, dimensions.1);
 
     for (_comm, members) in community_members.iter() {
@@ -135,7 +137,7 @@ pub fn init_abstraction(img: &GrayImage) -> HashMap<Label, Vec<Coord>> {
     nodes
 }
 
-// takes a vector of grouped pixel coordinates and returns the pixels that comprise the 
+// takes a vector of grouped pixel coordinates and returns the pixels that comprise the
 // border of the group and the internal pixels
 pub fn get_border_coords(member_coords: &[Coord]) -> (Vec<Coord>, Vec<Coord>) {
     let mut border_coords: Vec<Coord> = Vec::new();
@@ -222,8 +224,8 @@ pub fn get_group_means(pixels: &[Coord]) -> (u32, u32) {
     (x_mean, y_mean)
 }
 
-// searches for neighbors to each node that are within the radius 
-// and meet a certain criteria (in this case, the delta is less than 
+// searches for neighbors to each node that are within the radius
+// and meet a certain criteria (in this case, the delta is less than
 // the threshold) - in this case an edge is added between these nodes
 pub fn check_neighbors(
     node_centers: &HashMap<Node, Coord>,
@@ -268,7 +270,7 @@ pub fn check_neighbors(
 // between the two nodes. currently this just uses the mean luma value
 pub fn get_node_values(nodes: &HashMap<Label, Vec<Coord>>, img: &GrayImage) -> HashMap<Node, u8> {
     let mut node_values: HashMap<Node, u8> = HashMap::new();
-    
+
     for (node, pixels) in nodes.iter() {
         let pixel_vals: Vec<f32> = pixels
             .iter()
