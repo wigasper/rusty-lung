@@ -158,7 +158,12 @@ pub fn get_border_coords(member_coords: &[Coord]) -> (Vec<Coord>, Vec<Coord>) {
                 .collect();
             x_vals.sort();
             border_coords.push((x_vals[0], y.to_owned()));
-            border_coords.push((x_vals[x_vals.len() - 1], y.to_owned()));
+           
+            // TODO this logic for these two if statements could probably be 
+            // nicer
+            if x_vals.len() > 1 {
+                border_coords.push((x_vals[x_vals.len() - 1], y.to_owned()));
+            }
 
             if x_vals.len() > 2 {
                 x_vals.remove(0);

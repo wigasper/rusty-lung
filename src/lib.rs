@@ -6,6 +6,8 @@ pub mod utils;
 mod tests {
     type Node = u32;
     type Label = u32;
+    type Coord = (u32, u32);
+
     pub use crate::label_prop::*;
     pub use crate::utils::*;
 
@@ -57,4 +59,23 @@ mod tests {
         let result: Label = 3;
         assert_eq!(result, get_new_label(&adjs, &labs));
     }
+
+    #[test]
+    fn test_get_border_coords_0() {
+        let member_coords = vec![(0, 0), (1, 0), (2, 0)];
+        let internal_coords: Vec<Coord> = Vec::new();
+        let border_coords = vec![(0, 0), (1, 0), (2, 0)];
+
+        assert_eq!((border_coords, internal_coords), get_border_coords(&member_coords));
+    }
+
+    #[test]
+    fn test_get_border_coords_1() {
+        let member_coords = vec![(0, 0), (0, 1), (0, 2)];
+        let internal_coords: Vec<Coord> = Vec::new();
+        let border_coords = vec![(0, 0), (0, 2), (0, 1)];
+
+        assert_eq!((border_coords, internal_coords), get_border_coords(&member_coords));
+    }
+
 }
