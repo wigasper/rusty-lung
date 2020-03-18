@@ -160,7 +160,7 @@ pub fn get_border_coords(member_coords: &[Coord]) -> (Vec<Coord>, Vec<Coord>) {
             border_coords.push((x_vals[0], y.to_owned()));
            
             // TODO this logic for these two if statements could probably be 
-            // nicer
+            // more elegant
             if x_vals.len() > 1 {
                 border_coords.push((x_vals[x_vals.len() - 1], y.to_owned()));
             }
@@ -205,18 +205,19 @@ pub fn get_bounds(value: u32, max: u32, radius: u32) -> (u32, u32) {
     (min_bound, max_bound)
 }
 
+pub fn mean(vals: &[f32]) -> f32 {
+    let sum: f32 = vals.iter().sum();
+    sum / vals.len() as f32
+}
 // returns the x and y means for a group of pixels.
 // this could possibly use some work as there might be better ways
 // to find a group's "center"
-// TODO: repetition here
 pub fn get_group_means(pixels: &[Coord]) -> (u32, u32) {
     let x_vals: Vec<f32> = pixels.iter().map(|pix| pix.0 as f32).collect();
-    let x_sum: f32 = x_vals.iter().sum();
-    let x_mean: u32 = (x_sum / x_vals.len() as f32) as u32;
+    let x_mean: u32 = mean(&x_vals) as u32;
 
     let y_vals: Vec<f32> = pixels.iter().map(|pix| pix.1 as f32).collect();
-    let y_sum: f32 = y_vals.iter().sum();
-    let y_mean: u32 = (y_sum / x_vals.len() as f32) as u32;
+    let y_mean: u32 = mean(&y_vals) as u32;
 
     (x_mean, y_mean)
 }
@@ -273,9 +274,7 @@ pub fn get_node_values(nodes: &HashMap<Label, Vec<Coord>>, img: &GrayImage) -> H
             .iter()
             .map(|pix| img.get_pixel(pix.0, pix.1).channels()[0] as f32)
             .collect();
-        let sum: f32 = pixel_vals.iter().sum();
-        let mean: u8 = (sum / pixel_vals.len() as f32) as u8;
-
+        let mean: u8 = mean(&pixel_vals) as u8;
         node_values.insert(node.to_owned(), mean);
     }
 

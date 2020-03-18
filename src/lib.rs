@@ -78,4 +78,30 @@ mod tests {
         assert_eq!((border_coords, internal_coords), get_border_coords(&member_coords));
     }
 
+    #[test]
+    fn test_get_border_coords_2() {
+        let member_coords = vec![(0, 0), (0, 1), (0, 2), (1, 0), (2, 0)];
+        let internal_coords: Vec<Coord> = Vec::new();
+        let border_coords = vec![(0, 0), (0, 2), (1, 0), (2, 0), (0, 1)];
+
+        assert_eq!((border_coords, internal_coords), get_border_coords(&member_coords));
+    }
+
+    #[test]
+    fn test_get_border_coords_3() {
+        let member_coords = vec![(0, 0), (1, 0), (2, 0),
+                                 (0, 1), (1, 1), (2, 1),
+                                 (0, 2), (1, 2), (2, 2)];
+        let internal_coords = vec![(1, 1)];
+        let border_coords = vec![(0, 0), (1, 0), (2, 0), (0, 2), (1, 2), (2, 2),
+                                 (0, 1), (2, 1)];
+
+        assert_eq!((border_coords, internal_coords), get_border_coords(&member_coords));
+    }
+
+    #[test]
+    fn test_mean_0() {
+        let test_vec = vec![2.2, 3.2, 4.2];
+        assert_eq!(3.2, mean(&test_vec));
+    }
 }
