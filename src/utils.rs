@@ -24,7 +24,6 @@ pub fn segment_image(file_path: &str, out_path: &str, mut radius: u32, threshold
     // initial abstraction of image to graph
     let mut nodes: HashMap<Label, Vec<Coord>> = init_abstraction(&img);
 
-    // TODO is this the most efficient thing to do here?
     let mut adj_list: HashMap<Node, Vec<Node>>;
     let mut communities: HashMap<Node, Label>;
     let mut community_members: HashMap<Label, Vec<Node>> = HashMap::new();
