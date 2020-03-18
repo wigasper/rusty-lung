@@ -4,7 +4,6 @@ use crate::label_prop::*;
 use image::*;
 
 use std::collections::HashMap;
-// use std::iter::FromIterator;
 
 type Node = u32;
 type Label = u32;
@@ -15,10 +14,6 @@ type Coord = (u32, u32);
 // runs label propagation again, repeats this process the desired number of times,
 // and then writes the output
 pub fn segment_image(file_path: &str, out_path: &str, mut radius: u32, threshold: u8) {
-    // using this initially produces a very interesting result:
-    //let (adj_list, node_coords, node_labels, img) = build_adj_list(&file_path, &1, &5);
-
-    // load image
     let img = image::open(file_path).unwrap().to_luma();
 
     // initial abstraction of image to graph
@@ -108,8 +103,6 @@ pub fn communities_to_nodes(
     let mut nodes_out: HashMap<Label, Vec<Coord>> = HashMap::new();
 
     for (community, nodes) in communities.iter() {
-        //nodes.insert(community.to_owned(), Vec::new());
-
         let mut coords: Vec<Coord> = Vec::new();
         for node in nodes.iter() {
             for coord in prior_nodes.get(node).unwrap().iter() {

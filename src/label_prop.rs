@@ -8,8 +8,6 @@ use std::collections::HashMap;
 type Node = u32;
 type Label = u32;
 
-// TODO: is there something here where if a nodes adjacents all have one label we can
-// remove it from the pool to be checked? speed things up??
 pub fn get_new_label(adjacents: &[Node], node_labels: &HashMap<Node, Label>) -> Label {
     let labels: Vec<Label> = adjacents
         .iter()
@@ -68,11 +66,11 @@ pub fn label_prop(adj_list: &HashMap<Node, Vec<Node>>) -> HashMap<Node, Label> {
     }
 
     let mut num_iters = 0;
-    
+
     // fit loop
     loop {
-        // change tracking could occur here. original label prop paper has 
-        // the algorithm terminate when the labels don't change. that doesn't 
+        // change tracking could occur here. original label prop paper has
+        // the algorithm terminate when the labels don't change. that doesn't
         // seem to be possible with the characteristics of this graph though
 
         // shuffle nodes vec for random updating
@@ -83,7 +81,7 @@ pub fn label_prop(adj_list: &HashMap<Node, Vec<Node>>) -> HashMap<Node, Label> {
 
         num_iters += 1;
         println!("Completed {} iters", num_iters);
-        
+
         if num_iters == max_iters {
             break;
         }
