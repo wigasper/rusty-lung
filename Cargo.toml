@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 image = "0.23.0"
 rand = "0.7.3"
+clap = "2.33.0"
 
 [profile.release]
 lto = "fat"
