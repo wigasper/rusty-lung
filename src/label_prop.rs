@@ -59,7 +59,7 @@ pub fn label_prop(adj_list: &HashMap<Node, Vec<Node>>) -> HashMap<Node, Label> {
     let mut rng = thread_rng();
     let mut nodes: Vec<Node> = Vec::new();
 
-    let max_iters = 5;
+    let max_iters = 30;
 
     for (node, _adjs) in adj_list.iter() {
         nodes.push(node.to_owned());
@@ -78,7 +78,7 @@ pub fn label_prop(adj_list: &HashMap<Node, Vec<Node>>) -> HashMap<Node, Label> {
 
         // update nodes
         update_nodes(&adj_list, &mut node_labels, &nodes);
-
+        
         num_iters += 1;
         println!("Completed {} iters", num_iters);
 

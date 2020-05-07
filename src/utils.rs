@@ -13,7 +13,11 @@ type Coord = (u32, u32);
 // runs label propagation on the graph, abstracts the resulting communities to a graph,
 // runs label propagation again, repeats this process the desired number of times,
 // and then writes the output
-pub fn segment_image(file_path: &str, out_path: &str, mut radius: u32, threshold: u8) {
+pub fn segment_image(file_path: &str, out_path: &str, mut radius: u32, 
+                     threshold: u8, radius_multiplier: f32) {
+    // first was 10, then 3, now 1.5
+    //let RADIUS_MULTIPLIER: f32 = 3.0;
+
     let img = image::open(file_path).unwrap().to_luma();
 
     // initial abstraction of image to graph
@@ -24,7 +28,7 @@ pub fn segment_image(file_path: &str, out_path: &str, mut radius: u32, threshold
     let mut community_members: HashMap<Label, Vec<Node>> = HashMap::new();
 
     // TODO: take this as command line arg
-    let max_iters: u8 = 2;
+    let max_iters: u8 = 3;
     let mut num_iters: u8 = 0;
 
     // run label prop for the desired number of iterations.
@@ -52,7 +56,7 @@ pub fn segment_image(file_path: &str, out_path: &str, mut radius: u32, threshold
         }
 
         nodes = communities_to_nodes(&nodes, &community_members);
-        radius = ((radius as f32) * 10.0) as u32;
+        radius = ((radius as f32) * radius_multiplier) as u32;
     }
 
     write_output(out_path, &community_members, &nodes, img.dimensions());

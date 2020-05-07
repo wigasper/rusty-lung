@@ -31,6 +31,14 @@ fn main() {
                 .help("initial radius for neighbor checking"),
         )
         .arg(
+            Arg::with_name("RADIUS_MULTIPLIER")
+                .short("m")
+                .long("multiplier")
+                .default_value("3.0")
+                .help("multiplies the radius by this value for each new round of abstraction"),
+        )
+
+        .arg(
             Arg::with_name("THRESHOLD")
                 .short("t")
                 .long("threshold")
@@ -54,6 +62,18 @@ fn main() {
             );
         });
 
+    let radius_multiplier: f32 = matches
+        .value_of("RADIUS_MULTIPLIER")
+        .unwrap()
+        .parse()
+        .unwrap_or_else(|why| {
+            panic!(
+                "Could not parse '{}' to f32: {}",
+                matches.value_of("RADIUS_MULTIPLIER").unwrap(),
+                why
+            );
+        });
+
     let threshold: u8 = matches
         .value_of("THRESHOLD")
         .unwrap()
@@ -66,5 +86,5 @@ fn main() {
             );
         });
 
-    segment_image(input_fp, output_fp, radius, threshold);
+    segment_image(input_fp, output_fp, radius, threshold, radius_multiplier);
 }
